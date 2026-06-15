@@ -190,15 +190,15 @@ const spectrumAxes = [
         right: { name: "ADHD Style", key: "ADHD" }
     },
     {
-        id: "socialMind",
-        title: "Social Architecture Axis",
-        left: { name: "Autistic Style", key: "Autism" },
-        right: { name: "Antisocial / Psychopathy Style", key: "ASPD" }
+        id: "reactivity",
+        title: "Emotional Reactivity Axis",
+        left: { name: "Neurotic / Histrionic Style", key: "Neurotic" },
+        right: { name: "Psychopathic Style", key: "Psychopathy" }
     },
     {
-        id: "egotism",
-        title: "Ego Orientation Axis",
-        left: { name: "Standard Baseline", key: "Base" },
+        id: "socialEgo",
+        title: "Social & Ego Orientation Axis",
+        left: { name: "Autistic Style", key: "Autism" },
         right: { name: "Narcissistic Style", key: "Narcissism" }
     },
     {
@@ -212,27 +212,32 @@ const spectrumAxes = [
 // Explicit question assignments to axes. 
 // A choice of +5 pulls toward the RIGHT pole, -5 pulls toward the LEFT pole.
 const questions = [
+    // 1. Cognitive Regulation Axis (OCD vs. ADHD)
     { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", gain: 1.0 }, // ADHD (+)
     { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", gain: -1.0 }, // OCD (-)
     { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain: 0.8 }, // ADHD (+)
     { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", gain: -1.0 }, // OCD (-)
     { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", gain: 0.9 }, // ADHD (+)
     
-    { id: 6, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialMind", gain: -1.0 }, // Autism (-)
-    { id: 7, text: "I remain cold, calculated, and entirely unaffected by situations that cause massive panic and crying in others.", axis: "socialMind", gain: 1.0 }, // ASPD (+)
-    { id: 8, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialMind", gain: -0.9 }, // Autism (-)
-    { id: 9, text: "I find it incredibly straightforward to alter my presentation or manipulate people to achieve specific personal outcomes.", axis: "socialMind", gain: 1.0 }, // ASPD (+)
-    { id: 10, text: "I experience highly pronounced sensitivities to specific sensory details like bright lights, textures, or persistent background sounds.", axis: "socialMind", gain: -0.8 }, // Autism (-)
+    // 2. Emotional Reactivity Axis (Neurotic/Histrionic vs. Psychopathic)
+    { id: 6, text: "I experience rapidly shifting, intense emotions and feel deeply uncomfortable when environments feel cold or distant.", axis: "reactivity", gain: -1.0 }, // Neurotic (-)
+    { id: 7, text: "Even in deep crises or dangerous situations, I remain perfectly cold, fearless, and unbothered while others panic.", axis: "reactivity", gain: 1.0 }, // Psychopathic (+)
+    { id: 8, text: "I am highly vulnerable to criticism or perceived rejection, often reacting with visible emotional distress.", axis: "reactivity", gain: -0.9 }, // Neurotic (-)
+    { id: 9, text: "Fear, guilt, and natural empathy are things I simply do not experience internally when crossing lines.", axis: "reactivity", gain: 1.0 }, // Psychopathic (+)
+    { id: 10, text: "I find myself using dramatic behaviors or emotional outbursts just to ensure people are paying attention to me.", axis: "reactivity", gain: -0.8 }, // Histrionic/Neurotic (-)
     
-    { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "egotism", gain: 1.0 }, // Narcissism (+)
-    { id: 12, text: "I feel an overwhelming wave of internal rage or intense humiliation if someone challenges my performance or critiques me.", axis: "egotism", gain: 0.9 }, // Narcissism (+)
-    { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "egotism", gain: 1.0 }, // Narcissism (+)
-    { id: 14, text: "I am perfectly content functioning within basic communal norms without needing public validation or special status.", axis: "egotism", gain: -0.8 }, // Base (-)
+    // 3. Social & Ego Orientation Axis (Autism vs. Narcissism)
+    { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "socialEgo", gain: 1.0 }, // Narcissism (+)
+    { id: 12, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialEgo", gain: -1.0 }, // Autism (-)
+    { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "socialEgo", gain: 1.0 }, // Narcissism (+)
+    { id: 14, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialEgo", gain: -0.9 }, // Autism (-)
+    { id: 15, text: "I experience highly pronounced sensitivities to specific sensory details like bright lights, textures, or background sounds.", axis: "socialEgo", gain: -0.8 }, // Autism (-)
     
-    { id: 15, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 }, // Depression (+)
-    { id: 16, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 }, // Depression (+)
-    { id: 17, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 0.9 }, // Depression (+)
-    { id: 18, text: "I preserve an active, highly energetic curiosity and look forward to what tomorrow brings.", axis: "vitality", gain: -1.0 } // Vital (-)
+    // 4. Pervasive Energy Scale (Vitality vs. Depression)
+    { id: 16, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 }, // Depression (+)
+    { id: 17, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 }, // Depression (+)
+    { id: 18, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 0.9 }, // Depression (+)
+    { id: 19, text: "I preserve an active, highly energetic curiosity and look forward to what tomorrow brings.", axis: "vitality", gain: -1.0 } // Vital (-)
 ];
 
 // Inject explicit step range nodes
@@ -261,8 +266,8 @@ function updateValue(id, val) {
 
 function calculateResults() {
     // Instantiate raw score accumulations per axis
-    const axisTotals = { regulatory: 0, socialMind: 0, egotism: 0, vitality: 0 };
-    const axisMaxes = { regulatory: 0, socialMind: 0, egotism: 0, vitality: 0 };
+    const axisTotals = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
+    const axisMaxes = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
 
     // Process inputs across vector map configurations
     questions.forEach(q => {
