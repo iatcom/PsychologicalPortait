@@ -100,23 +100,36 @@
         .results { display: none; }
         
         .type-verdict-box {
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
             color: white;
-            padding: 30px;
+            padding: 35px;
             border-radius: 12px;
             text-align: center;
             margin-bottom: 35px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);
+        }
+        .role-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #38bdf8;
+            margin-bottom: 5px;
         }
         .type-code {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 900;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             margin: 10px 0;
+            color: #ffffff;
         }
         .type-description {
             font-size: 1.1rem;
             opacity: 0.9;
-            line-height: 1.5;
+            line-height: 1.6;
+            margin-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
         }
 
         .axis-wrapper {
@@ -192,9 +205,9 @@
     </div>
 
     <div id="results" class="results">
-        <!-- New Conclusion Element Block -->
+        <!-- Upgraded MBTI Code Verdict Block -->
         <div class="type-verdict-box">
-            <div style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.1em; font-weight: bold;">Your Archetype Configuration Code</div>
+            <div id="computed-role-title" class="role-title">The Role Name</div>
             <div class="type-code" id="computed-type-code">----</div>
             <div class="type-description" id="computed-type-desc">Analyzing profile structures...</div>
         </div>
@@ -214,53 +227,73 @@ const spectrumAxes = [
     {
         id: "regulatory",
         title: "Cognitive Regulation Axis",
-        left: { name: "OCD Style", key: "OCD", code: "C" },
-        right: { name: "ADHD Style", key: "ADHD", code: "R" }
+        left: { name: "OCD Style", key: "OCD", code: "O" },
+        right: { name: "ADHD Style", key: "ADHD", code: "A" }
     },
     {
         id: "reactivity",
         title: "Emotional Reactivity Axis",
-        left: { name: "Neurotic / Histrionic Style", key: "Neurotic", code: "N" },
+        left: { name: "Neurotic / Histrionic Style", key: "Neurotic", code: "H" },
         right: { name: "Psychopathic Style", key: "Psychopathy", code: "P" }
     },
     {
         id: "socialEgo",
-        title: "Social & Ego Orientation Axis",
+        title: "Social Architecture Axis",
         left: { name: "Autistic Style", key: "Autism", code: "A" },
-        right: { name: "Narcissistic Style", key: "Narcissism", code: "M" }
+        right: { name: "Narcissistic Style", key: "Narcissism", code: "N" }
     },
     {
         id: "vitality",
         title: "Pervasive Energy Scale",
-        left: { name: "Standard Vitality", key: "Vital", code: "V" },
+        left: { name: "Standard Vitality", key: "Vital", code: "S" },
         right: { name: "Depressive Style", key: "Depression", code: "D" }
     }
 ];
 
+// 16 Role Profiles Directory
+const matrixRoles = {
+    "OHAS": { title: "The Perfectionist Safe-Keeper", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, you rely on specialized systemized logic, backed by a resilient operational vitality baseline." },
+    "OHAD": { title: "The Isolated Sentinel", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, you rely on specialized systemized logic, while experiencing a localized depletion in baseline energy." },
+    "OHNS": { title: "The Dramatic Orchestrator", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, backed by a resilient operational vitality baseline." },
+    "OHND": { title: "The Fragile Sovereign", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, while experiencing a localized depletion in baseline energy." },
+    "OPAS": { title: "The Systemizing Engineer", desc: "You orient heavily toward structured control, paired with deep logical detachment under pressure. Socially, you rely on specialized systemized logic, backed by a resilient operational vitality baseline." },
+    "OPAD": { title: "The Detached Analyst", desc: "You orient heavily toward structured control, paired with deep logical detachment under pressure. Socially, you rely on specialized systemized logic, while experiencing a localized depletion in baseline energy." },
+    "OPNS": { title: "The Strategic Director", desc: "The ultimate executive pattern. Structured control combined with total logical detachment, high ego-assertion, and high operational energy." },
+    "OPND": { title: "The Cold Architect", desc: "You orient heavily toward structured control, paired with deep logical detachment under pressure. Socially, your profile leans toward high ego-assertion, while experiencing a localized depletion in baseline energy." },
+    "AHAS": { title: "The Creative Storm", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, you lean on specialized systemized logic, backed by structural vitality." },
+    "AHAD": { title: "The Wandering Romantic", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, you lean on specialized systemized logic, alongside temporary energy depletion." },
+    "AHNS": { title: "The Charismatic Maverick", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, backed by systemic vitality." },
+    "AHND": { title: "The Volatile Free-Agent", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, with visible baseline energy depletion." },
+    "APAS": { title: "The Independent Explorer", desc: "Flexible spontaneous impulses combined with calm logical detachment. Socially systemized and driven by a strong, resilient vitality loop." },
+    "APAD": { title: "The Ghost Observer", desc: "You navigate environments via flexible spontaneous impulses, paired with deep logical detachment under pressure. Socially systemized, showing a low-energy baseline posture." },
+    "APNS": { title: "The Opportunistic Pioneer", desc: "Spontaneous flexibility combined with absolute fearlessness under pressure, high ego-assertion, and high baseline goal-striving energy." },
+    "APND": { title: "The Drifting Outlaw", desc: "You navigate environments via flexible spontaneous impulses, paired with deep logical detachment under pressure. Socially ego-assertive, operating on lowered systemic baseline energy." }
+};
+
 // Balanced 20-Question Matrix Array. Every single question explicitly provides directional metric gains.
 const questions = [
-    // 1. Cognitive Regulation Axis (Negative pulls OCD, Positive pulls ADHD)
+    // 1. Cognitive Regulation Axis (Negative pulls O, Positive pulls A)
     { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", gain: 1.0 },
     { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", gain: -1.0 },
     { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain: 1.0 },
     { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", gain: -1.0 },
     { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", gain: 1.0 },
     
-    // 2. Emotional Reactivity Axis (Negative pulls Neurotic, Positive pulls Psychopathic)
+    // 2. Emotional Reactivity Axis (Negative pulls H, Positive pulls P)
     { id: 6, text: "I experience rapidly shifting, intense emotions and feel deeply uncomfortable when environments feel cold or distant.", axis: "reactivity", gain: -1.0 },
     { id: 7, text: "Even in deep crises or dangerous situations, I remain perfectly cold, fearless, and unbothered while others panic.", axis: "reactivity", gain: 1.0 },
     { id: 8, text: "I am highly vulnerable to criticism or perceived rejection, often reacting with visible emotional distress.", axis: "reactivity", gain: -1.0 },
     { id: 9, text: "Fear, guilt, and natural empathy are things I simply do not experience internally when crossing lines.", axis: "reactivity", gain: 1.0 },
     { id: 10, text: "I find myself using dramatic behaviors or emotional outbursts just to ensure people are paying attention to me.", axis: "reactivity", gain: -1.0 },
     
-    // 3. Social & Ego Orientation Axis (Negative pulls Autism, Positive pulls Narcissism)
+    // 3. Social Architecture Axis (Negative pulls A, Positive pulls N)
     { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "socialEgo", gain: 1.0 },
     { id: 12, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialEgo", gain: -1.0 },
     { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "socialEgo", gain: 1.0 },
     { id: 14, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialEgo", gain: -1.0 },
     { id: 15, text: "I feel an intense wave of personal entitlement or superiority when dealing with standard everyday environments.", axis: "socialEgo", gain: 1.0 },
     
-    // 4. Pervasive Energy Scale (Negative pulls Vital, Positive pulls Depressive)
+    // 4. Pervasive Energy Scale (Negative pulls S, Positive pulls D)
     { id: 16, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 },
     { id: 17, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 },
     { id: 18, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 1.0 },
@@ -268,7 +301,7 @@ const questions = [
     { id: 20, text: "I feel physically light, mentally capable, and driven to connect dynamically with goals throughout the week.", axis: "vitality", gain: -1.0 }
 ];
 
-// Generate explicit stepped option ranges
+// Inject explicit stepped option ranges
 const container = document.getElementById('questions-container');
 questions.forEach((q, index) => {
     container.innerHTML += `
@@ -325,7 +358,6 @@ function calculateResults() {
             displayPercentage = Math.round((Math.abs(currentScore) / maxScore) * 100);
             generatedTypeCode += axis.left.code;
         } else {
-            // Equal split default parameters matching standard MBTI tiebreakers
             side = "left";
             displayPercentage = 0;
             generatedTypeCode += axis.left.code;
@@ -359,23 +391,12 @@ function calculateResults() {
         }, 100);
     });
 
-    // Run structural type calculation summary mapping blocks
+    // Populate MBTI-Style Role Profile Outputs
+    const activeRole = matrixRoles[generatedTypeCode] || { title: "The Balanced Matrix", desc: "Your profile maps precisely to the central baseline intersection of the vector fields." };
+    
+    document.getElementById('computed-role-title').innerText = activeRole.title;
     document.getElementById('computed-type-code').innerText = generatedTypeCode;
-    
-    // Interpret dynamic structural sentence configuration matches
-    let summaryText = "Your profile balances components across multiple spectrums. ";
-    
-    const regLetter = generatedTypeCode[0];
-    const reaLetter = generatedTypeCode[1];
-    const socLetter = generatedTypeCode[2];
-    const vitLetter = generatedTypeCode[3];
-
-    summaryText += (regLetter === "C") ? "You orient heavily toward structured control and regulation, " : "You navigate your environment with flexible, spontaneous impulses. ";
-    summaryText += (reaLetter === "N") ? "while experiencing highly sensitive emotional waves. " : "paired with deep, logical detachment under high pressure. ";
-    summaryText += (socLetter === "A") ? "Socially, you lean on specialized systemized logic, " : "Socially, your profile leans toward high ego-assertion, ";
-    summaryText += (vitLetter === "V") ? "backed currently by a resilient operational vitality baseline." : "while experiencing a localized depletion in overall baseline energy.";
-
-    document.getElementById('computed-type-desc').innerText = summaryText;
+    document.getElementById('computed-type-desc').innerText = activeRole.desc;
 }
 </script>
 
