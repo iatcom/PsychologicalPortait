@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experimental Spectrum Profile (MBTI-Style)</title>
+    <title>Experimental Core Spectrum Profile</title>
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -14,7 +14,7 @@
             --accent-bg: #f1f5f9;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -28,7 +28,7 @@
             background: var(--card-bg);
             padding: 40px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         }
         h1 { text-align: center; color: #0f172a; margin-top: 0; font-size: 2rem; }
         .disclaimer {
@@ -95,128 +95,147 @@
         }
         button:hover { background-color: #2563eb; }
         button:active { transform: scale(0.98); }
+        
+        /* Spectrum Matrix Results Elements */
         .results { display: none; }
-        .result-segment {
+        .axis-wrapper {
             background: var(--accent-bg);
-            padding: 25px;
+            padding: 20px 25px;
             border-radius: 12px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border: 1px solid var(--border-color);
         }
-        .result-label {
+        .axis-meta {
             display: flex;
             justify-content: space-between;
             font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-            color: #0f172a;
-        }
-        .bar-bg {
-            background-color: #cbd5e1;
-            border-radius: 6px;
-            height: 24px;
-            width: 100%;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-        .bar-fill {
-            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
-            height: 100%;
-            width: 0%;
-            transition: width 1.2s cubic-bezier(0.1, 1, 0.1, 1);
-        }
-        .explanation-box {
-            font-size: 0.95rem;
-            line-height: 1.6;
+            font-size: 1rem;
+            margin-bottom: 10px;
             color: #475569;
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 4px solid var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        .explanation-box strong { color: #1e293b; }
+        .axis-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .pole-left { color: #0284c7; }
+        .pole-right { color: #b45309; }
+        .spectrum-bar-bg {
+            background-color: #cbd5e1;
+            border-radius: 8px;
+            height: 28px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .center-divider {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: rgba(255,255,255,0.6);
+            z-index: 2;
+        }
+        .indicator-block {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 0%;
+            transition: width 1.2s cubic-bezier(0.1, 1, 0.1, 1), left 1.2s cubic-bezier(0.1, 1, 0.1, 1);
+        }
+        .indicator-block.to-left {
+            background: linear-gradient(270deg, #38bdf8, #0284c7);
+        }
+        .indicator-block.to-right {
+            background: linear-gradient(90deg, #fbbf24, #b45309);
+        }
     </style>
 </head>
 <body>
 
 <div class="quiz-container">
-    <h1>Experimental Archetype Spectrum</h1>
+    <h1>Experimental Archetype Matrix</h1>
     <div class="disclaimer">
-        <strong>Experimental Project Notice:</strong> This application maps cognitive, neurological, and behavioral trends into a structural spectrum matrix inspired by the MBTI. It is an educational code experiment and is <strong>not</strong> a psychological, psychiatric, or clinical diagnosis tool.
+        <strong>Experimental Design Notice:</strong> This matrix clusters related behavioral metrics on dual-pole axes inspired by structural personality inventory models. It does not provide clinical evaluations or psychiatric diagnostic assessments.
     </div>
 
     <div id="quiz-form">
         <div id="questions-container"></div>
-        <button onclick="calculateResults()">Generate Archetype Profile</button>
+        <button onclick="calculateResults()">Compile Matrix Overview</button>
     </div>
 
     <div id="results" class="results">
-        <h2>Your Experimental Spectrum Profile</h2>
-        <p style="margin-bottom: 30px; color: #64748b;">Below are your calculated alignments based on the interconnected matrix weights, accompanied by structural behavioral explanations.</p>
+        <h2>Your Matrix Configuration Overview</h2>
+        <p style="margin-bottom: 30px; color: #64748b;">This snapshot maps your answers across direct opposing behavioral polarities without diagnostic text profiles.</p>
+        
         <div id="results-display"></div>
-        <button onclick="window.location.reload()" style="margin-top: 20px; background-color: #475569;">Retake Quiz</button>
+        
+        <button onclick="window.location.reload()" style="margin-top: 30px; background-color: #475569;">Reset Inventory Matrix</button>
     </div>
 </div>
 
 <script>
-// Deep definitions data block
-const traitDefinitions = {
-    "Narcissism": {
-        definition: "A psychological spectrum involving inflated self-importance, a deep-seated need for excessive attention and admiration, and fragile self-esteem.",
-        behavior: "An individual highly aligned with this profile frequently seeks validation, steers conversations back to their achievements, reacts defensively to minor criticisms, and tends to view relationships instrumentally—evaluating others based on what value or status they provide."
+// Dynamic Axis Config. Left properties yield negative scores (-), Right properties yield positive scores (+)
+const spectrumAxes = [
+    {
+        id: "regulatory",
+        title: "Cognitive Regulation Axis",
+        left: { name: "OCD Style", key: "OCD" },
+        right: { name: "ADHD Style", key: "ADHD" }
     },
-    "Autism": {
-        definition: "A neurodevelopmental condition characterized by unique patterns of social interaction, specific communication styles, hyper-focused interests, and differences in processing sensory input.",
-        behavior: "A person with high alignment often prefers literal, direct communication and can find unspoken social rules or small talk exhausting. They frequently thrive on predictable routines, experience intense passion for deep-dives into niche topics, and may be highly sensitive to environments with loud noises or bright lights."
+    {
+        id: "socialMind",
+        title: "Social Architecture Axis",
+        left: { name: "Autistic Style", key: "Autism" },
+        right: { name: "Antisocial / Psychopathy Style", key: "ASPD" }
     },
-    "ADHD": {
-        definition: "Attention-Deficit/Hyperactivity Disorder, a neurodevelopmental profile dealing with executive dysfunction—specifically, difficulties regulating the brain's dopamine reward and attention management systems.",
-        behavior: "An individual here typically struggles to sustain focus on routine or non-stimulating tasks, but can hyper-focus intensely on novel, exciting projects. They often experience internal restlessness, find themselves starting multiple projects without finishing them, struggle with time-blindness, and make decisions impulsively."
+    {
+        id: "egotism",
+        title: "Ego Orientation Axis",
+        left: { name: "Standard Baseline", key: "Base" },
+        right: { name: "Narcissistic Style", key: "Narcissism" }
     },
-    "OCD": {
-        definition: "Obsessive-Compulsive Disorder, an anxiety-driven condition marked by distressing, intrusive thoughts (obsessions) and repetitive mental or physical actions (compulsions) performed to alleviate that anxiety.",
-        behavior: "A person aligned with this pattern experiences persistent, unwanted 'what-if' loops regarding safety, symmetry, or contamination. To quiet these intrusive fears, they feel a rigid, overwhelming urge to execute specific routines, double-check tasks repeatedly, or organize items to perfection."
-    },
-    "Psychopathy": {
-        definition: "A neuropsychiatric profile categorized under Antisocial Personality Disorder (ASPD), marked by deficient emotional responses, a profound lack of empathy, a lack of remorse, and innate charm.",
-        behavior: "In practice, an individual scoring high here remains calm and unbothered in high-stress crises that panics others. They easily simulate social warmth to achieve tactical goals, make highly calculated decisions without emotional interference, and experience minimal internal guilt when crossing interpersonal lines."
-    },
-    "Sociopathy": {
-        definition: "A behavioral and personality pattern under ASPD heavily influenced by environmental trauma, characterized by emotional volatility, an unstable lifestyle, and open defiance of social rules.",
-        behavior: "Unlike the calculated calmness of psychopathy, a person with high sociopathic tendencies behaves with noticeable impulsiveness and erratic anger. They act out visibly against authority structures, find it difficult to maintain steady employment or relationships, and are highly prone to sudden risks or confrontations."
-    },
-    "Depression": {
-        definition: "A pervasive mood disorder characterized by a chronic deflation of emotional baseline energy, cognitive deceleration, and a loss of the brain's capacity to experience pleasure (anedonia).",
-        behavior: "An individual navigating this state exhibits severe drops in energy, a persistent heavy sadness or emotional numbness, and views their future through a deeply pessimistic lens. Simple, everyday tasks like replying to messages or self-care require massive mental willpower, often leading to withdrawal from loved ones."
+    {
+        id: "vitality",
+        title: "Pervasive Energy Scale",
+        left: { name: "Standard Vitality", key: "Vital" },
+        right: { name: "Depressive Style", key: "Depression" }
     }
-};
-
-// 21 Questions with Multi-Trait Weight Matrix mapping
-const questions = [
-    { id: 1, text: "I find myself profoundly drained by superficial small talk and often miss subtle or unwritten social cues.", weights: { "Autism": 1.0, "Sociopathy": 0.3 } },
-    { id: 2, text: "I feel that I am fundamentally more capable, unique, or special than the vast majority of people I meet.", weights: { "Narcissism": 1.0 } },
-    { id: 3, text: "My mind feels like it has dozens of channels running at once, making it incredibly hard to focus on a single tedious task.", weights: { "ADHD": 1.0 } },
-    { id: 4, text: "I am plagued by persistent, distressing thoughts that something terrible will happen if I don't check things or do tasks in a specific sequence.", weights: { "OCD": 1.0 } },
-    { id: 5, text: "Even in terrifying or high-stakes crises, I remain perfectly calm, cold, and detached while others panic.", weights: { "Psychopathy": 1.0, "Narcissism": 0.2 } },
-    { id: 6, text: "I have a history of impulsively breaking rules, ignoring societal laws, or getting into confrontations without worrying about the risks.", weights: { "Sociopathy": 1.0, "ADHD": 0.4 } },
-    { id: 7, text: "Lately, everything feels physically and mentally exhausting, and things that used to bring me joy feel completely hollow.", weights: { "Depression": 1.0 } },
-    { id: 8, text: "I tend to cut people out of my life completely without looking back or feeling any sense of remorse or sentimental loss.", weights: { "Psychopathy": 0.7, "Sociopathy": 0.6, "Narcissism": 0.4 } },
-    { id: 9, text: "I get deeply hyper-focused on specific complex topics or niche hobbies for days, losing track of everything else.", weights: { "Autism": 0.8, "ADHD": 0.8 } },
-    { id: 10, text: "I often feel a intense wave of anger or humiliation when someone gives me constructive criticism or points out a flaw.", weights: { "Narcissism": 1.0 } },
-    { id: 11, text: "I struggle immensely with 'time blindness'—either being severely late or constantly misjudging how long a task will take.", weights: { "ADHD": 1.0 } },
-    { id: 12, text: "I feel an intense, rigid need for symmetry, perfect order, or absolute cleanliness in my immediate surroundings to feel at peace.", weights: { "OCD": 1.0 } },
-    { id: 13, text: "I find it remarkably easy to manipulate situations or lie seamlessly to get exactly what I want out of people.", weights: { "Psychopathy": 0.9, "Narcissism": 0.5 } },
-    { id: 14, text: "I feel restless, reactive, and easily angered by authority figures who try to control my immediate freedom.", weights: { "Sociopathy": 0.9, "ADHD": 0.3 } },
-    { id: 15, text: "My self-worth fluctuates heavily between feeling completely superior to everyone and feeling entirely worthless and empty.", weights: { "Narcissism": 0.6, "Depression": 0.7 } },
-    { id: 16, text: "I am highly sensitive to sensory overloads, such as certain textures, unexpected loud noises, or intensely bright lighting.", weights: { "Autism": 1.0 } },
-    { id: 17, text: "I tend to abandon projects halfway through because the initial rush of excitement wears off, leaving a trail of unfinished goals.", weights: { "ADHD": 1.0 } },
-    { id: 18, text: "I find myself re-doing tasks over and over again because my brain insists that it wasn't done flawlessly the first time.", weights: { "OCD": 0.9, "Narcissism": 0.2 } },
-    { id: 19, text: "I see my future as bleak, hopeless, and empty, and I struggle to find a compelling reason to put effort into things.", weights: { "Depression": 1.0 } },
-    { id: 20, text: "I can look at someone else suffering or crying and feel absolutely zero emotional resonance or natural empathy inside me.", weights: { "Psychopathy": 1.0, "Sociopathy": 0.5 } },
-    { id: 21, text: "I strictly rely on fixed schedules and repetitive habits; any sudden change to my planned routine causes me intense distress.", weights: { "Autism": 0.9, "OCD": 0.4 } }
 ];
 
-// Ingest and render questions
+// Explicit question assignments to axes. 
+// A choice of +5 pulls toward the RIGHT pole, -5 pulls toward the LEFT pole.
+const questions = [
+    { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", gain: 1.0 }, // ADHD (+)
+    { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", gain: -1.0 }, // OCD (-)
+    { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain: 0.8 }, // ADHD (+)
+    { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", gain: -1.0 }, // OCD (-)
+    { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", gain: 0.9 }, // ADHD (+)
+    
+    { id: 6, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialMind", gain: -1.0 }, // Autism (-)
+    { id: 7, text: "I remain cold, calculated, and entirely unaffected by situations that cause massive panic and crying in others.", axis: "socialMind", gain: 1.0 }, // ASPD (+)
+    { id: 8, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialMind", gain: -0.9 }, // Autism (-)
+    { id: 9, text: "I find it incredibly straightforward to alter my presentation or manipulate people to achieve specific personal outcomes.", axis: "socialMind", gain: 1.0 }, // ASPD (+)
+    { id: 10, text: "I experience highly pronounced sensitivities to specific sensory details like bright lights, textures, or persistent background sounds.", axis: "socialMind", gain: -0.8 }, // Autism (-)
+    
+    { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "egotism", gain: 1.0 }, // Narcissism (+)
+    { id: 12, text: "I feel an overwhelming wave of internal rage or intense humiliation if someone challenges my performance or critiques me.", axis: "egotism", gain: 0.9 }, // Narcissism (+)
+    { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "egotism", gain: 1.0 }, // Narcissism (+)
+    { id: 14, text: "I am perfectly content functioning within basic communal norms without needing public validation or special status.", axis: "egotism", gain: -0.8 }, // Base (-)
+    
+    { id: 15, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 }, // Depression (+)
+    { id: 16, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 }, // Depression (+)
+    { id: 17, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 0.9 }, // Depression (+)
+    { id: 18, text: "I preserve an active, highly energetic curiosity and look forward to what tomorrow brings.", axis: "vitality", gain: -1.0 } // Vital (-)
+];
+
+// Inject explicit step range nodes
 const container = document.getElementById('questions-container');
 questions.forEach((q, index) => {
     container.innerHTML += `
@@ -224,7 +243,8 @@ questions.forEach((q, index) => {
             <div class="question-text">${index + 1}. ${q.text}</div>
             <div class="slider-container">
                 <div class="current-value" id="val-${q.id}">0</div>
-                <input type="range" id="q-${q.id}" min="-5" max="5" value="0" oninput="updateValue(${q.id}, this.value)">
+                <!-- Step parameter strictly assigned to 1 to force single increments -->
+                <input type="range" id="q-${q.id}" min="-5" max="5" value="0" step="1" oninput="updateValue(${q.id}, this.value)">
                 <div class="slider-labels">
                     <span>Strongly Disagree (-5)</span>
                     <span>Neutral (0)</span>
@@ -240,64 +260,73 @@ function updateValue(id, val) {
 }
 
 function calculateResults() {
-    // Structural aggregates
-    const totalPossibleWeights = { "Narcissism": 0, "Autism": 0, "ADHD": 0, "OCD": 0, "Psychopathy": 0, "Sociopathy": 0, "Depression": 0 };
-    const earnedWeights = { "Narcissism": 0, "Autism": 0, "ADHD": 0, "OCD": 0, "Psychopathy": 0, "Sociopathy": 0, "Depression": 0 };
+    // Instantiate raw score accumulations per axis
+    const axisTotals = { regulatory: 0, socialMind: 0, egotism: 0, vitality: 0 };
+    const axisMaxes = { regulatory: 0, socialMind: 0, egotism: 0, vitality: 0 };
 
-    // Calculate maximum structural potential for scaling calculations
+    // Process inputs across vector map configurations
     questions.forEach(q => {
-        for (const [trait, weight] of Object.entries(q.weights)) {
-            // Max score per question weight is weight * 5 (strongly agree)
-            totalPossibleWeights[trait] += weight * 5;
-            
-            // Extract input
-            const val = parseInt(document.getElementById(`q-${q.id}`).value);
-            // Map raw choices mathematically into earned weights
-            earnedWeights[trait] += weight * val;
-        }
+        const val = parseInt(document.getElementById(`q-${q.id}`).value);
+        // Net gain value calculation: input selection multiplied by directional trait gain weight
+        axisTotals[q.axis] += val * q.gain;
+        // Maximum absolute potential limit tracking for exact 0-100% calculation normalization
+        axisMaxes[q.axis] += 5 * Math.abs(q.gain);
     });
 
-    // Hide input view, show results view
     document.getElementById('quiz-form').style.display = 'none';
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.style.display = 'block';
+    document.getElementById('results').style.display = 'block';
 
     const display = document.getElementById('results-display');
     display.innerHTML = '';
-    
-    // Sort and calculate accurate percentage matrix indexes
-    for (const trait of Object.keys(earnedWeights)) {
-        const maxPossible = totalPossibleWeights[trait];
-        const currentEarned = earnedWeights[trait];
-        
-        // Dynamic scaling normalization formula: convert range [-Max, +Max] cleanly to [0%, 100%]
-        let percentage = Math.round(((currentEarned + maxPossible) / (maxPossible * 2)) * 100);
-        if (isNaN(percentage)) percentage = 50; // Safeguard fallback if no weights matched
 
-        const info = traitDefinitions[trait];
+    spectrumAxes.forEach(axis => {
+        const currentScore = axisTotals[axis.id];
+        const maxScore = axisMaxes[axis.id];
+        
+        // Map raw balance score [-Max, +Max] out to clean absolute percentages [100% Left <-> 0% Central <-> 100% Right]
+        let side = "center";
+        let displayPercentage = 0;
+        
+        if (currentScore > 0) {
+            side = "right";
+            displayPercentage = Math.round((currentScore / maxScore) * 100);
+        } else if (currentScore < 0) {
+            side = "left";
+            displayPercentage = Math.round((Math.abs(currentScore) / maxScore) * 100);
+        }
 
         display.innerHTML += `
-            <div class="result-segment">
-                <div class="result-label">
-                    <span>${trait} Matrix Match</span>
-                    <span>${percentage}%</span>
+            <div class="axis-wrapper">
+                <div class="axis-meta">${axis.title}</div>
+                <div class="axis-labels">
+                    <span class="pole-left">${axis.left.name} ${side === 'left' ? `(${displayPercentage}%)` : ''}</span>
+                    <span class="pole-right">${side === 'right' ? `(${displayPercentage}%)` : ''} ${axis.right.name}</span>
                 </div>
-                <div class="bar-bg">
-                    <div class="bar-fill" id="bar-${trait}" style="width: 0%"></div>
-                </div>
-                <div class="explanation-box">
-                    <strong>Definition:</strong> ${info.definition}<br><br>
-                    <strong>Structural Behavioral Pattern:</strong> ${info.behavior}
+                <div class="spectrum-bar-bg">
+                    <div class="center-divider"></div>
+                    <div class="indicator-block ${side === 'left' ? 'to-left' : 'to-right'}" id="bar-${axis.id}"></div>
                 </div>
             </div>
         `;
-        
-        // Handle render frame scheduling for smooth UI bar extensions
+
+        // Render animation sequence block handling positions relative to the 50% split container anchor
         setTimeout(() => {
-            const bar = document.getElementById(`bar-${trait}`);
-            if(bar) bar.style.width = percentage + '%';
+            const bar = document.getElementById(`bar-${axis.id}`);
+            if (bar) {
+                if (side === "right") {
+                    bar.style.left = "50%";
+                    bar.style.width = (displayPercentage / 2) + "%";
+                } else if (side === "left") {
+                    // Pull bar alignment backward to grow leftward smoothly
+                    bar.style.left = (50 - (displayPercentage / 2)) + "%";
+                    bar.style.width = (displayPercentage / 2) + "%";
+                } else {
+                    bar.style.left = "50%";
+                    bar.style.width = "0%";
+                }
+            }
         }, 100);
-    }
+    });
 }
 </script>
 
