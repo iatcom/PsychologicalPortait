@@ -255,26 +255,26 @@
             width: 100%;
             position: relative;
             overflow: hidden;
+            display: flex;
         }
-        .center-divider {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            width: 2px;
+        .split-bar-half {
+            width: 50%;
             height: 100%;
-            background-color: rgba(255,255,255,0.4);
-            z-index: 2;
+            position: relative;
+            overflow: hidden;
         }
-        .indicator-block {
+        .split-bar-half.left-side { border-right: 1px solid rgba(255,255,255,0.3); }
+        
+        .indicator-block-fill {
             height: 100%;
-            position: absolute;
-            top: 0;
-            left: 50%;
             width: 0%;
-            transition: width 0.8s ease-out, left 0.8s ease-out;
+            transition: width 0.8s ease-out;
+            position: absolute;
+            top: 0;
         }
-        .indicator-block.to-left { background: linear-gradient(270deg, #38bdf8, #0284c7); }
-        .indicator-block.to-right { background: linear-gradient(90deg, #fbbf24, #b45309); }
+        .left-side .indicator-block-fill { right: 0; background: linear-gradient(270deg, #38bdf8, #0284c7); }
+        .right-side .indicator-block-fill { left: 0; background: linear-gradient(90deg, #fbbf24, #b45309); }
+        
         .indicator-block.unipolar-fill {
             left: 0;
             background: linear-gradient(90deg, #64748b, #ef4444);
@@ -396,78 +396,79 @@
 const spectrumAxes = [
     {
         id: "regulatory",
-        title: "Cognitive Regulation Axis",
-        left: { name: "OCD Style", code: "O", def: "Intense drive for structural control, checking, symmetry, and routine compliance to mitigate anxiety." },
-        right: { name: "ADHD Style", code: "A", def: "High novelty-seeking, spontaneous impulsivity, fluid mental focus, and organic time blindness." },
+        title: "Cognitive Regulation System",
+        left: { name: "Structure [OCD-style]", code: "O", def: "Intense drive for structural control, checking, symmetry, and routine compliance to mitigate anxiety." },
+        right: { name: "Flexibility [ADHD-style]", code: "A", def: "High novelty-seeking, spontaneous impulsivity, fluid mental focus, and organic time blindness." },
         normalMin: 35, normalMax: 65
     },
     {
         id: "reactivity",
-        title: "Emotional Reactivity Axis",
-        left: { name: "Neurotic Style", code: "H", def: "Rapid emotional amplification, high sensitivity to social feedback, and acute landscape variations." },
-        right: { name: "Psychopathic Style", code: "P", def: "Deep structural detachment under extreme stress, minimal anxiety, and lowered visceral empathy." },
+        title: "Emotional Modulation System",
+        left: { name: "Emotional Reactivity [Neurotic-style]", code: "H", def: "Rapid emotional amplification, high sensitivity to social feedback, and acute landscape variations." },
+        right: { name: "Emotional Detachment [Psychopathic-style]", code: "P", def: "Deep structural detachment under extreme stress, minimal anxiety, and lowered visceral empathy." },
         normalMin: 35, normalMax: 65
     },
     {
         id: "socialEgo",
-        title: "Social Architecture Axis",
-        left: { name: "Autistic Style", code: "A", def: "Heavy reliance on explicit logical systems, strict baseline patterns, and unwritten-cue-free communication." },
-        right: { name: "Narcissistic Style", code: "N", def: "Expansive agentic ego structure driving high baseline self-evaluation and systemic validation metrics." },
+        title: "Social Interaction Engagement",
+        left: { name: "System Orientation [Autistic-style]", code: "A", def: "Heavy reliance on explicit logical systems, strict baseline patterns, and unwritten-cue-free communication." },
+        right: { name: "Status Orientation [Narcissistic-style]", code: "N", def: "Expansive agentic ego structure driving high baseline self-evaluation and systemic validation metrics." },
         normalMin: 35, normalMax: 65
     },
     {
         id: "vitality",
-        title: "Pervasive Energy Scale",
-        left: { name: "Standard Vitality", code: "S", def: "Balanced operational engine unencumbered by systematic neuro-functional exhaustion parameters." },
-        right: { name: "Depressive Style", code: "D", def: "Systemic operational energy depletion, high execution friction, and structural pessimism variables." },
+        title: "Pervasive Energy Profile",
+        left: { name: "Energy Reserve", code: "S", def: "Balanced operational engine unencumbered by systematic neuro-functional exhaustion parameters." },
+        right: { name: "Burnout Risk [Depressive-style]", code: "D", def: "Systemic operational energy depletion, high execution friction, and structural pessimism variables." },
         normalMin: 0, normalMax: 50
     }
 ];
 
-const matrixRoles = {
-    "OHAS": { title: "The Perfectionist Safe-Keeper", desc: "<strong>Profile Matrix Analysis:</strong> Rigorous protective structure. Combines high demand for systematic internal rule verification (OCD-leaning Dominant) with an incredibly responsive emotional compass (Neurotic). Socially operates via direct system data channels rather than status signaling games (Autistic). Backed by unencumbered functional energy (Standard Vitality), you protect operational baseline parameters cleanly.", mbti: "INFJ / ISFJ", sector: "Quality Assurance & Compliance", insights: "Excels in environments requiring strict procedural governance, systematic safety controls, or precise systemic curation. Highly suited for roles like Clinical Research Director, Compliance Officer, and Systems Auditor." },
-    "OHAD": { title: "The Isolated Sentinel", desc: "<strong>Profile Matrix Analysis:</strong> High monitoring parameters clashing against systemic fuel starvation. You construct strict external rules and analytical patterns to safeguard a fragile internal landscape. Social connectivity parameters feel extremely taxing, prompting withdrawal into secure zones. Currently, high Depressive burden variables limit output, anchoring you to an introverted observation pattern.", mbti: "INFP / ISFP", sector: "Independent Creative & Deep Research", insights: "Optimal execution found within low-friction, deeply autonomous technical or reflective operations. Thrives when isolated from heavy social demands or rapid context-switching. Best roles include Remote Technical Archival, Deep Data Curation, or Specialized Technical Writing." },
-    "OHNS": { title: "The Dramatic Orchestrator", desc: "<strong>Profile Matrix Analysis:</strong> High-impact social driver structure. Merges rigorous demands for administrative structure with an expressive, reactive communication loop. Your social configuration leverages systemic rules, status positions, and validation metrics (Narcissistic Dominant). Backed by high active energy, you position yourself effectively as a regulatory pillar in group operations.", mbti: "ENFJ / ESFJ", sector: "Structured Leadership & Personnel Governance", insights: "Thrives in highly visible institutional landscapes that value protocol combined with dynamic group motivation. Exceptional at managing organizational structures. Ideal roles include Training & Development Directors, Human Resource Strategists, and Public Relations Policy Administrators." },
-    "OHND": { title: "The Fragile Sovereign", desc: "<strong>Profile Matrix Analysis:</strong> Severe friction signature. Your internal ego maps expect extreme systemic precision, recognition, and structural execution, paired with an acute emotional sensitivity to performance failure or criticism. Because your active energy scale features an over-threshold Depressive burden, follow-through capacity is highly limited, generating cycles of anxious paralysis.", mbti: "ENFP (Under Stress Structure)", sector: "Strategic Analysis & Advisory Role", insights: "Performs best in advisory or consultant matrices where deep ideation and systemic structural evaluations are required without the operational burden of day-to-day project execution. Ideal fields: Structural Consultant, Theoretical Policy Advisor." },
-    "OPAS": { title: "The Systemizing Engineer", desc: "<strong>Profile Matrix Analysis:</strong> Highly rationalized, low-vulnerability processing engine. Melds strict rule verification with absolute tactical calmness and fearlessness under high operational stress (Psychopathic Dominant). Social systems are navigated via literal, logical paths entirely decoupled from validation or emotional demands. Highly effective at debugging chaotic real-time crises cleanly.", mbti: "INTJ / ISTJ", sector: "Systems Architecture & Cybersecurity", insights: "Perfect alignment for hyper-complex engineering systems where emotional bias must be completely neutralized. Exceptional in high-risk defensive infrastructures. Dominant careers include Cyber Security Infrastructure Architects, Quant Trading Engineers, and Critical Systems Infrastructure Managers." },
-    "OPAD": { title: "The Detached Analyst", desc: "<strong>Profile Matrix Analysis:</strong> Clinical cognitive isolation. Operates via an ultra-precise, systemizing approach buffered by an unbothered, absolute emotional detachment strategy. Because active energetic capacity is significantly suppressed by high Depressive burden values, you systematically avoid status battles and complex social networks, calculating data quietly from a distant safe frame.", mbti: "INTP / ISTP", sector: "Back-End Infrastructure & Logic Engineering", insights: "Flawless performance profiles in isolated data debugging, complex logic compilation, or background network architecture. Minimal structural execution friction when managing automated configurations. Highly suited for Low-Level Back-End Developers, Cryptographic Engineers, and Strategic Database Architects." },
-    "OPNS": { title: "The Strategic Director", desc: "<strong>Profile Matrix Analysis:</strong> Maximized operational leverage template. Combines high structured calculation parameters, total crisis fearlessness, and an expansive, status-seeking ego framework. Backed by fully functional, unencumbered baseline energy, you engineer rules, leverage social networks aggressively, and steer complex systems toward targeted objectives cleanly.", mbti: "ENTJ", sector: "Executive Strategy & Scale Management", insights: "Engineered for pure operational dominance, market leverage optimization, or high-stakes institutional engineering. Utterly unhindered by social performance anxiety. Highest yields found in Venture Capital Management, Enterprise Execution Directors, and Scale Architects." },
-    "OPND": { title: "The Cold Architect", desc: "<strong>Profile Matrix Analysis:</strong> Hidden structural coordinator. Possesses an ambitious ego blueprint that expects authoritative command over systems, backed by total emotional resilience to pressure. However, because you are currently running a high-burden Depressive energy state, you skip overt self-promotion. Instead, you design structures and direct variables from behind the scenes.", mbti: "INTJ (Shadow Variant)", sector: "Macro Strategy & Long-Range Planning", insights: "Succeeds at structuring backend logistics and directing structural coordinates without requiring high public social energy expenditure. Excels at high-level economic modeling, background political strategic framing, or Enterprise Portfolio Governance." },
-    "AHAS": { title: "The Creative Storm", desc: "<strong>Profile Matrix Analysis:</strong> Fluid exploratory framework. Driven by shifting novelty-seeking priorities and a highly flexible, open focus map (ADHD Dominant), connected to an intensely reactive emotional center. You analyze social systems using specialized, highly customized contextual maps rather than rigid hierarchy ranks. High active vitality allows fast, iterative adaptations.", mbti: "ENFP", sector: "Agile Innovation & Dynamic Ideation", insights: "Thrives in fast-paced environments requiring rapid synthesis of disparate data and human elements. Ideal for highly dynamic sectors like R&D Innovation Leads, Creative Directors, Startup Founders, and Disruptive Product Managers." },
-    "AHAD": { title: "The Wandering Romantic", desc: "<strong>Profile Matrix Analysis:</strong> Introspective exploratory profile with constrained processing fuel. Features a highly flexible, rule-rejecting cognitive style and intense emotional sensitivity. Because your current energy scale tracks a high Depressive burden value, your mental paths rarely translate into physical real-time execution, driving deep, inward-facing conceptual processing.", mbti: "INFP", sector: "Conceptual Design & Narrative Development", insights: "Optimized for highly abstract, independent conceptual environments. Excels in creative fields where structural deadlines are secondary to internal depth. Roles include Creative Content Designers, Deep Narrative Novelists, and Conceptual Abstract Theorists." },
-    "AHNS": { title: "The Charismatic Maverick", desc: "<strong>Profile Matrix Analysis:</strong> High-influence improviser blueprint. Completely rejects standardized administrative rulebooks and schedules, relying on spontaneous bursts of insight. Your active emotional system responds quickly, pairing with an ambitious, status-seeking social matrix configuration. High baseline energy yields highly dynamic group positioning.", mbti: "ENTP / ESTP", sector: "Growth Hacking & Market Exploitation", insights: "Highly optimized for volatile, emergent fields where standard regulations have collapsed or do not yet exist. Thrives on strategic charisma and pivoting. Best fit: Tech Evangelists, Growth-Hacking Campaign Leads, or Venture Incubation Executives." },
-    "AHND": { title: "The Volatile Free-Agent", desc: "<strong>Profile Matrix Analysis:</strong> Erratic performance footprint. Shifts rapidly between new concepts while evading long-term structural tracking, paired with high vulnerability to friction or negative social metrics. Overt status goals exist, but an over-threshold Depressive burden profile creates severe execution bottlenecks, triggering cycles of intense excitement followed by rapid crashes.", mbti: "ENFP / ENTP (Burnout Dynamic)", sector: "Ad-hoc Special Projects Consulting", insights: "Thrives in short-burst, high-novelty advisory frameworks where long-term routine maintenance is outsourced. Projects that require initial flash insight or hyper-focus without routine operations are optimal." },
-    "APAS": { title: "The Independent Explorer", desc: "<strong>Profile Matrix Analysis:</strong> Self-contained tactical rogue. Pairs a highly flexible, opportunistic focus strategy with absolute emotional resilience and structural crisis fearlessness. Social engagement parameters avoid political status tracking entirely, relying on flat, direct, and literal communication tracks. Highly effective when dropped into unpredictable environments.", mbti: "ISTP", sector: "Tactical Crisis Operations & Field Testing", insights: "Superb alignment for high-chaos, localized environments requiring rapid, pragmatic structural adjustments without administrative oversight. Premier roles: Emergency Disaster Logistics, Experimental Field Engineers, Penetration Testers." },
-    "APAD": { title: "The Ghost Observer", desc: "<strong>Profile Matrix Analysis:</strong> Low-profile unencumbered drifter. Navigates reality with zero demand for rigid schedules or administrative restrictions, filtering inputs through an unbothered, hyper-calm emotional state. Because social architecture is highly insular and functional energy is heavily bound by a Depressive burden, you pass through environments safely invisible.", mbti: "INTP (Lurker Phenotype)", sector: "Data Parsing & Automated Systems", insights: "Suited to long-term monitoring or automated process oversight where human interaction metrics are completely flat. Highly effective at asynchronous oversight: Open-Source Algorithm Reviewers, Background System Scanners." },
-    "APNS": { title: "The Opportunistic Pioneer", desc: "<strong>Profile Matrix Analysis:</strong> Target-focused entrepreneurial design. Operates with a completely open, non-linear cognitive structure that spots immediate functional openings, backed by absolute fearlessness and a highly confident, status-oriented social architecture. Maximized energetic vitality yields immediate tactical adjustments to maximize advantage.", mbti: "ESTP", sector: "Agile Venture Trading & Business Operations", insights: "Thrives in rapid, variable-intensive markets requiring transactional fearlessness and high external pivot capacity. Exceptional output in Venture Capital Trading, High-Stakes Deal Brokerage, and Turnaround Business Crisis Management." },
-    "APND": { title: "The Drifting Outlaw", desc: "<strong>Profile Matrix Analysis:</strong> Autonomous off-grid configuration. Operates outside standard administrative frameworks and feels completely insulated from social expectations, authoritative demands, or external anxiety markers. While possessing an independent social ego, an elevated Depressive burden scale keeps you from empire building, prompting quiet, unhindered transit.", mbti: "ISTP / INTP (Off-Grid Architecture)", sector: "Decentralized Systems & Specialized Contracting", insights: "Flourishes in independent consulting contracts or specialized project evaluation loops decoupled from permanent corporate architecture. Premier fits: Freelance Smart Contract Auditing, Cryptographic Architecture Engineering." }
-};
-
+// Explicit independent mapping of trait targets to items
 const questions = [
-    { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", gain: 1.0 },
-    { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", gain: -1.0 },
-    { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain: 1.0 },
-    { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", gain: -1.0 },
-    { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", gain: 1.0 },
+    { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", trait: "ADHD", weight: 1.0 },
+    { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", trait: "OCD", weight: 1.0 },
+    { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", trait: "ADHD", weight: 1.0 },
+    { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", trait: "OCD", weight: 1.0 },
+    { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", trait: "ADHD", weight: 1.0 },
     
-    { id: 6, text: "I experience rapidly shifting, intense emotions and feel deeply uncomfortable when environments feel cold or distant.", axis: "reactivity", gain: -1.0 },
-    { id: 7, text: "Even in deep crises or dangerous situations, I remain perfectly cold, fearless, and unbothered while others panic.", axis: "reactivity", gain: 1.0 },
-    { id: 8, text: "I am highly vulnerable to criticism or perceived rejection, often reacting with visible emotional distress.", axis: "reactivity", gain: -1.0 },
-    { id: 9, text: "Fear, guilt, and natural empathy are things I simply do not experience internally when crossing lines.", axis: "reactivity", gain: 1.0 },
-    { id: 10, text: "I find myself using dramatic behaviors or emotional outbursts just to ensure people are paying attention to me.", axis: "reactivity", gain: -1.0 },
+    { id: 6, text: "I experience rapidly shifting, intense emotions and feel deeply uncomfortable when environments feel cold or distant.", axis: "reactivity", trait: "Neurotic", weight: 1.0 },
+    { id: 7, text: "Even in deep crises or dangerous situations, I remain perfectly cold, fearless, and unbothered while others panic.", axis: "reactivity", trait: "Psychopathic", weight: 1.0 },
+    { id: 8, text: "I am highly vulnerable to criticism or perceived rejection, often reacting with visible emotional distress.", axis: "reactivity", trait: "Neurotic", weight: 1.0 },
+    { id: 9, text: "Fear, guilt, and natural empathy are things I simply do not experience internally when crossing lines.", axis: "reactivity", trait: "Psychopathic", weight: 1.0 },
+    { id: 10, text: "I find myself using dramatic behaviors or emotional outbursts just to ensure people are paying attention to me.", axis: "reactivity", trait: "Neurotic", weight: 1.0 },
     
-    { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "socialEgo", gain: 1.0 },
-    { id: 12, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialEgo", gain: -1.0 },
-    { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "socialEgo", gain: 1.0 },
-    { id: 14, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialEgo", gain: -1.0 },
-    { id: 15, text: "I feel an intense wave of personal entitlement or superiority when dealing with standard everyday environments.", axis: "socialEgo", gain: 1.0 },
+    { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "socialEgo", trait: "Narcissistic", weight: 1.0 },
+    { id: 12, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialEgo", trait: "Autistic", weight: 1.0 },
+    { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "socialEgo", trait: "Narcissistic", weight: 1.0 },
+    { id: 14, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialEgo", trait: "Autistic", weight: 1.0 },
+    { id: 15, text: "I feel an intense wave of personal entitlement or superiority when dealing with standard everyday environments.", axis: "socialEgo", trait: "Narcissistic", weight: 1.0 },
     
-    { id: 16, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 },
-    { id: 17, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 },
-    { id: 18, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 1.0 },
-    { id: 19, text: "I preserve an active, highly energetic curiosity and look forward to what tomorrow brings.", axis: "vitality", gain: -1.0 },
-    { id: 20, text: "I feel physically light, mentally capable, and driven to connect dynamically with goals throughout the week.", axis: "vitality", gain: -1.0 }
+    { id: 16, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", trait: "Depressive", weight: 1.0 },
+    { id: 17, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", trait: "Depressive", weight: 1.0 },
+    { id: 18, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", trait: "Depressive", weight: 1.0 },
+    { id: 19, text: "I preserve an active, highly energetic curiosity and look forward to what tomorrow brings.", axis: "vitality", trait: "Reserve", weight: 1.0 },
+    { id: 20, text: "I feel physically light, mentally capable, and driven to connect dynamically with goals throughout the week.", axis: "vitality", trait: "Reserve", weight: 1.0 }
 ];
+
+const matrixRoles = {
+    "OHAS": { title: "The Perfectionist Safe-Keeper", mbti: "INFJ / ISFJ", sector: "Quality Assurance & Compliance", insights: "Excels in environments requiring strict procedural governance, systematic safety controls, or precise systemic curation. Highly suited for roles like Clinical Research Director, Compliance Officer, and Systems Auditor.", desc: "<strong>Profile Matrix Analysis:</strong> Rigorous protective structure. Combines high demand for systematic internal rule verification (Structure Dominant) with an incredibly responsive emotional compass (Emotional Reactivity). Socially operates via direct system data channels rather than status signaling games (System Orientation). Backed by unencumbered functional energy (Energy Reserve), you protect operational baseline parameters cleanly." },
+    "OHAD": { title: "The Isolated Sentinel", mbti: "INFP / ISFP", sector: "Independent Creative & Deep Research", insights: "Optimal execution found within low-friction, deeply autonomous technical or reflective operations. Thrives when isolated from heavy social demands or rapid context-switching. Best roles include Remote Technical Archival, Deep Data Curation, or Specialized Technical Writing.", desc: "<strong>Profile Matrix Analysis:</strong> High monitoring parameters clashing against systemic fuel starvation. You construct strict external rules and analytical patterns to safeguard a fragile internal landscape. Social connectivity parameters feel extremely taxing, prompting withdrawal into secure zones. Currently, high Burnout Risk variables limit output, anchoring you to an introverted observation pattern." },
+    "OHNS": { title: "The Dramatic Orchestrator", mbti: "ENFJ / ESFJ", sector: "Structured Leadership & Personnel Governance", insights: "Thrives in highly visible institutional landscapes that value protocol combined with dynamic group motivation. Exceptional at managing organizational structures. Ideal roles include Training & Development Directors, Human Resource Strategists, and Public Relations Policy Administrators.", desc: "<strong>Profile Matrix Analysis:</strong> High-impact social driver structure. Merges rigorous demands for administrative structure with an expressive, reactive communication loop. Your social configuration leverages systemic rules, status positions, and validation metrics (Status Orientation Dominant). Backed by high active energy, you position yourself effectively as a regulatory pillar in group operations." },
+    "OHND": { title: "The Fragile Sovereign", mbti: "ENFP (Under Stress Structure)", sector: "Strategic Analysis & Advisory Role", insights: "Performs best in advisory or consultant matrices where deep ideation and systemic structural evaluations are required without the operational burden of day-to-day project execution. Ideal fields: Structural Consultant, Theoretical Policy Advisor.", desc: "<strong>Profile Matrix Analysis:</strong> Severe friction signature. Your internal ego maps expect extreme systemic precision, recognition, and structural execution, paired with an acute emotional sensitivity to performance failure or criticism. Because your active energy scale features an over-threshold Burnout Risk, follow-through capacity is highly limited, generating cycles of anxious paralysis." },
+    "OPAS": { title: "The Systemizing Engineer", mbti: "INTJ / ISTJ", sector: "Systems Architecture & Cybersecurity", insights: "Perfect alignment for hyper-complex engineering systems where emotional bias must be completely neutralized. Exceptional in high-risk defensive infrastructures. Dominant careers include Cyber Security Infrastructure Architects, Quant Trading Engineers, and Critical Systems Infrastructure Managers.", desc: "<strong>Profile Matrix Analysis:</strong> Highly rationalized, low-vulnerability processing engine. Melds strict rule verification with absolute tactical calmness and fearlessness under high operational stress (Emotional Detachment Dominant). Social systems are navigated via literal, logical paths entirely decoupled from validation or emotional demands. Highly effective at debugging chaotic real-time crises cleanly." },
+    "OPAD": { title: "The Detached Analyst", mbti: "INTP / ISTP", sector: "Back-End Infrastructure & Logic Engineering", insights: "Flawless performance profiles in isolated data debugging, complex logic compilation, or background network architecture. Minimal structural execution friction when managing automated configurations. Highly suited for Low-Level Back-End Developers, Cryptographic Engineers, and Strategic Database Architects.", desc: "<strong>Profile Matrix Analysis:</strong> Clinical cognitive isolation. Operates via an ultra-precise, systemizing approach buffered by an unbothered, absolute emotional detachment strategy. Because active energetic capacity is significantly suppressed by high Burnout Risk values, you systematically avoid status battles and complex social networks, calculating data quietly from a distant safe frame." },
+    "OPNS": { title: "The Strategic Director", mbti: "ENTJ", sector: "Executive Strategy & Scale Management", insights: "Engineered for pure operational dominance, market leverage optimization, or high-stakes institutional engineering. Utterly unhindered by social performance anxiety. Highest yields found in Venture Capital Management, Enterprise Execution Directors, and Scale Architects.", desc: "<strong>Profile Matrix Analysis:</strong> River-cut operational leverage template. Combines high structured calculation parameters, total crisis fearlessness, and an expansive, status-seeking ego framework. Backed by fully functional, unencumbered baseline energy, you engineer rules, leverage social networks aggressively, and steer complex systems toward targeted objectives cleanly." },
+    "OPND": { title: "The Cold Architect", mbti: "INTJ (Shadow Variant)", sector: "Macro Strategy & Long-Range Planning", insights: "Succeeds at structuring backend logistics and directing structural coordinates without requiring high public social energy expenditure. Excels at high-level economic modeling, background political strategic framing, or Enterprise Portfolio Governance.", desc: "<strong>Profile Matrix Analysis:</strong> Hidden structural coordinator. Possesses an ambitious ego blueprint that expects authoritative command over systems, backed by total emotional resilience to pressure. However, because you are currently running a high-burden Burnout Risk energy state, you skip overt self-promotion. Instead, you design structures and direct variables from behind the scenes." },
+    "AHAS": { title: "The Creative Storm", mbti: "ENFP", sector: "Agile Innovation & Dynamic Ideation", insights: "Thrives in fast-paced environments requiring rapid synthesis of disparate data and human elements. Ideal for highly dynamic sectors like R&D Innovation Leads, Creative Directors, Startup Founders, and Disruptive Product Managers.", desc: "<strong>Profile Matrix Analysis:</strong> Fluid exploratory framework. Driven by shifting novelty-seeking priorities and a highly flexible, open focus map (Flexibility Dominant), connected to an intensely reactive emotional center. You analyze social systems using specialized, highly customized contextual maps rather than rigid hierarchy ranks. High active vitality allows fast, iterative adaptations." },
+    "AHAD": { title: "The Wandering Romantic", mbti: "INFP", sector: "Conceptual Design & Narrative Development", insights: "Optimized for highly abstract, independent conceptual environments. Excels in creative fields where structural deadlines are secondary to internal depth. Roles include Creative Content Designers, Deep Narrative Novelists, and Conceptual Abstract Theorists.", desc: "<strong>Profile Matrix Analysis:</strong> Introspective exploratory profile with constrained processing fuel. Features a highly flexible, rule-rejecting cognitive style and intense emotional sensitivity. Because your current energy scale tracks a high Burnout Risk value, your mental paths rarely translate into physical real-time execution, driving deep, inward-facing conceptual processing." },
+    "AHNS": { title: "The Charismatic Maverick", mbti: "ENTP / ESTP", sector: "Growth Hacking & Market Exploitation", insights: "Highly optimized for volatile, emergent fields where standard regulations have collapsed or do not yet exist. Thrives on strategic charisma and pivoting. Best fit: Tech Evangelists, Growth-Hacking Campaign Leads, or Venture Incubation Executives.", desc: "<strong>Profile Matrix Analysis:</strong> High-influence improviser blueprint. Completely rejects standardized administrative rulebooks and schedules, relying on spontaneous bursts of insight. Your active emotional system responds quickly, pairing with an ambitious, status-seeking social matrix configuration. High baseline energy yields highly dynamic group positioning." },
+    "AHND": { title: "The Volatile Free-Agent", mbti: "ENFP / ENTP (Burnout Dynamic)", sector: "Ad-hoc Special Projects Consulting", insights: "Thrives in short-burst, high-novelty advisory frameworks where long-term routine maintenance is outsourced. Projects that require initial flash insight or hyper-focus without routine operations are optimal.", desc: "<strong>Profile Matrix Analysis:</strong> Erratic performance footprint. Shifts rapidly between new concepts while evading long-term structural tracking, paired with high vulnerability to friction or negative social metrics. Overt status goals exist, but an over-threshold Burnout Risk profile creates severe execution bottlenecks, triggering cycles of intense excitement followed by rapid crashes." },
+    "APAS": { title: "The Independent Explorer", mbti: "ISTP", sector: "Tactical Crisis Operations & Field Testing", insights: "Superb alignment for high-chaos, localized environments requiring rapid, pragmatic structural adjustments without administrative oversight. Premier roles: Emergency Disaster Logistics, Experimental Field Engineers, Penetration Testers.", desc: "<strong>Profile Matrix Analysis:</strong> Self-contained tactical rogue. Pairs a highly flexible, opportunistic focus strategy with absolute emotional resilience and structural crisis fearlessness. Social engagement parameters avoid political status tracking entirely, relying on flat, direct, and literal communication tracks. Highly effective when dropped into unpredictable environments." },
+    "APAD": { title: "The Ghost Observer", mbti: "INTP (Lurker Phenotype)", sector: "Data Parsing & Automated Systems", insights: "Suited to long-term monitoring or automated process oversight where human interaction metrics are completely flat. Highly effective at asynchronous oversight: Open-Source Algorithm Reviewers, Background System Scanners.", desc: "<strong>Profile Matrix Analysis:</strong> Low-profile unencumbered drifter. Navigates reality with zero demand for rigid schedules or administrative restrictions, filtering inputs through an unbothered, hyper-calm emotional state. Because social architecture is highly insular and functional energy is heavily bound by a Burnout Risk, you pass through environments safely invisible." },
+    "APNS": { title: "The Opportunistic Pioneer", mbti: "ESTP", sector: "Agile Venture Trading & Business Operations", insights: "Thrives in rapid, variable-intensive markets requiring transactional fearlessness and high external pivot capacity. Exceptional output in Venture Capital Trading, High-Stakes Deal Brokerage, and Turnaround Business Crisis Management.", desc: "<strong>Profile Matrix Analysis:</strong> Target-focused entrepreneurial design. Operates with a completely open, non-linear cognitive structure that spots immediate functional openings, backed by absolute fearlessness and a highly confident, status-oriented social architecture. Maximized energetic vitality yields immediate tactical adjustments to maximize advantage." },
+    "APND": { title: "The Drifting Outlaw", mbti: "ISTP / INTP (Off-Grid Architecture)", sector: "Decentralized Systems & Specialized Contracting", insights: "Flourishes in independent consulting contracts or specialized project evaluation loops decoupled from permanent corporate architecture. Premier fits: Freelance Smart Contract Auditing, Cryptographic Architecture Engineering.", desc: "<strong>Profile Matrix Analysis:</strong> Autonomous off-grid configuration. Operates outside standard administrative frameworks and feels completely insulated from social expectations, authoritative demands, or external anxiety markers. While possessing an independent social ego, an elevated Burnout Risk scale keeps you from empire building, prompting quiet, unhindered transit." }
+};
 
 const container = document.getElementById('questions-container');
 questions.forEach((q, index) => {
@@ -504,13 +505,24 @@ document.addEventListener('click', function() {
 });
 
 function calculateResults() {
-    const axisTotals = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
-    const axisMaxes = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
+    // 1. Setup independent calculation buckets for all 7 traits
+    const traitScores = { OCD: 0, ADHD: 0, Neurotic: 0, Psychopathic: 0, Autistic: 0, Narcissistic: 0, Depressive: 0, Reserve: 0 };
+    const traitCounts = { OCD: 0, ADHD: 0, Neurotic: 0, Psychopathic: 0, Autistic: 0, Narcissistic: 0, Depressive: 0, Reserve: 0 };
 
+    // Accumulate scores natively per question
     questions.forEach(q => {
         const val = parseInt(document.getElementById(`q-${q.id}`).value);
-        axisTotals[q.axis] += val * q.gain;
-        axisMaxes[q.axis] += 5 * Math.abs(q.gain);
+        // Map range [-5, 5] to linear range [0, 10]
+        const positiveVal = val + 5;
+        traitScores[q.trait] += positiveVal;
+        traitCounts[q.trait]++;
+    });
+
+    // 2. Normalize to raw % out of 100 max possible per trait scale independently
+    let dimensions = {};
+    Object.keys(traitScores).forEach(trait => {
+        const maxPossible = traitCounts[trait] * 10;
+        dimensions[trait] = maxPossible > 0 ? Math.round((traitScores[trait] / maxPossible) * 100) : 0;
     });
 
     document.getElementById('quiz-form').style.display = 'none';
@@ -521,27 +533,19 @@ function calculateResults() {
     display.innerHTML = '';
 
     let generatedTypeCode = "";
-    
-    let dimensions = {
-        "OCD": 0, "ADHD": 0, "Neurotic": 0, "Psychopathic": 0, "Autistic": 0, "Narcissistic": 0, "Depressive": 0
-    };
 
     spectrumAxes.forEach((axis, index) => {
-        const currentScore = axisTotals[axis.id];
-        const maxScore = axisMaxes[axis.id];
-        
-        const rawPercentage = ((currentScore - (-maxScore)) / (maxScore - (-maxScore))) * 100;
-        const rightPercentage = Math.round(rawPercentage);
-        const leftPercentage = 100 - rightPercentage;
+        let leftPercentage, rightPercentage, statusText, statusClass;
 
         if (axis.id === "vitality") {
+            // Depressive-style is treated as the focal unipolar variance
+            rightPercentage = dimensions["Depressive"];
             const isDepressive = rightPercentage > 50;
             generatedTypeCode += isDepressive ? axis.right.code : axis.left.code;
-            dimensions["Depressive"] = rightPercentage;
 
             const isNormal = (rightPercentage >= axis.normalMin && rightPercentage <= axis.normalMax);
-            const statusClass = isNormal ? "range-normal" : "range-deviated";
-            const statusText = isDepressive ? `Depressive State Flagged (>50%)` : `Optimal Energy State (≤50%)`;
+            statusClass = isNormal ? "range-normal" : "range-deviated";
+            statusText = isDepressive ? `Elevated Risk Flagged (>50%)` : `Optimal Operational Baseline (≤50%)`;
 
             display.innerHTML += `
                 <div class="axis-wrapper">
@@ -559,10 +563,10 @@ function calculateResults() {
                         </div>
                     </div>
                     <div class="spectrum-bar-bg">
-                        <div class="indicator-block unipolar-fill" id="bar-${axis.id}"></div>
+                        <div class="indicator-block-fill unipolar-fill" id="bar-${axis.id}" style="left:0;"></div>
                     </div>
                     <div class="range-verdict ${statusClass}">
-                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
+                        ${statusText}
                     </div>
                 </div>
             `;
@@ -573,19 +577,19 @@ function calculateResults() {
             }, 100);
 
         } else {
+            // Pull explicit independent metrics calculated without zero-sum constraint rules
+            if (axis.id === "regulatory") { leftPercentage = dimensions["OCD"]; rightPercentage = dimensions["ADHD"]; }
+            if (axis.id === "reactivity") { leftPercentage = dimensions["Neurotic"]; rightPercentage = dimensions["Psychopathic"]; }
+            if (axis.id === "socialEgo") { leftPercentage = dimensions["Autistic"]; rightPercentage = dimensions["Narcissistic"]; }
+
             const leftDominant = leftPercentage >= rightPercentage;
             generatedTypeCode += leftDominant ? axis.left.code : axis.right.code;
 
-            if (axis.id === "regulatory") { dimensions["OCD"] = leftPercentage; dimensions["ADHD"] = rightPercentage; }
-            if (axis.id === "reactivity") { dimensions["Neurotic"] = leftPercentage; dimensions["Psychopathic"] = rightPercentage; }
-            if (axis.id === "socialEgo") { dimensions["Autistic"] = leftPercentage; dimensions["Narcissistic"] = rightPercentage; }
-
-            const isNormal = (leftPercentage >= axis.normalMin && leftPercentage <= axis.normalMax);
-            const statusClass = isNormal ? "range-normal" : "range-deviated";
-            const statusText = isNormal ? "Normal Spectrum Variance" : "Elevated Divergence Detected";
-
-            let side = leftDominant ? "left" : "right";
-            let displayBarWidth = Math.abs(leftPercentage - 50) * 2;
+            const leftIsNormal = (leftPercentage >= axis.normalMin && leftPercentage <= axis.normalMax);
+            const rightIsNormal = (rightPercentage >= axis.normalMin && rightPercentage <= axis.normalMax);
+            const absoluteNormal = leftIsNormal && rightIsNormal;
+            statusClass = absoluteNormal ? "range-normal" : "range-deviated";
+            statusText = absoluteNormal ? "Normal System Variance" : "Elevated Divergence Profile Detected";
 
             display.innerHTML += `
                 <div class="axis-wrapper">
@@ -603,30 +607,24 @@ function calculateResults() {
                         </div>
                     </div>
                     <div class="spectrum-bar-bg">
-                        <div class="center-divider"></div>
-                        <div class="indicator-block ${side === 'left' ? 'to-left' : 'to-right'}" id="bar-${axis.id}"></div>
+                        <div class="split-bar-half left-side"><div class="indicator-block-fill" id="bar-${axis.id}-l"></div></div>
+                        <div class="split-bar-half right-side"><div class="indicator-block-fill" id="bar-${axis.id}-r"></div></div>
                     </div>
                     <div class="dual-metrics-container">
-                        <span>${axis.left.name}: ${leftPercentage}%</span>
-                        <span>${axis.right.name}: ${rightPercentage}%</span>
+                        <span>Intensity: ${leftPercentage}%</span>
+                        <span>Intensity: ${rightPercentage}%</span>
                     </div>
                     <div class="range-verdict ${statusClass}">
-                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
+                        ${statusText} (Normal Bounds: ${axis.normalMin}% - ${axis.normalMax}%)
                     </div>
                 </div>
             `;
 
             setTimeout(() => {
-                const bar = document.getElementById(`bar-${axis.id}`);
-                if (bar) {
-                    if (side === "right") {
-                        bar.style.left = "50%";
-                        bar.style.width = (displayBarWidth / 2) + "%";
-                    } else if (side === "left") {
-                        bar.style.left = (50 - (displayBarWidth / 2)) + "%";
-                        bar.style.width = (displayBarWidth / 2) + "%";
-                    }
-                }
+                const barL = document.getElementById(`bar-${axis.id}-l`);
+                const barR = document.getElementById(`bar-${axis.id}-r`);
+                if (barL) barL.style.width = leftPercentage + "%";
+                if (barR) barR.style.width = rightPercentage + "%";
             }, 100);
         }
     });
@@ -647,7 +645,17 @@ function calculateResults() {
     document.getElementById('prof-sector').innerText = activeRole.sector;
     document.getElementById('mbti-desc-text').innerHTML = `<strong>Strategic Professional Blueprint:</strong> ${activeRole.insights}`;
 
-    drawSpiderChart(dimensions);
+    // Pass final 7 requested traits directly into Spider engine
+    const spiderPayload = {
+        "Structure [OCD-style]": dimensions["OCD"],
+        "Flexibility [ADHD-style]": dimensions["ADHD"],
+        "Emotional Reactivity [Neurotic-style]": dimensions["Neurotic"],
+        "Emotional Detachment [Psychopathic-style]": dimensions["Psychopathic"],
+        "System Orientation [Autistic-style]": dimensions["Autistic"],
+        "Status Orientation [Narcissistic-style]": dimensions["Narcissistic"],
+        "Burnout Risk [Depressive-style]": dimensions["Depressive"]
+    };
+    drawSpiderChart(spiderPayload);
 }
 
 function drawSpiderChart(data) {
@@ -658,7 +666,7 @@ function drawSpiderChart(data) {
     const width = canvas.width;
     const height = canvas.height;
     const centerPoint = width / 2;
-    const maxRadius = centerPoint - 45; 
+    const maxRadius = centerPoint - 65; 
     
     const labels = Object.keys(data);
     const values = Object.values(data);
@@ -726,13 +734,13 @@ function drawSpiderChart(data) {
     }
 
     ctx.fillStyle = '#cbd5e1';
-    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     for (let i = 0; i < totalSides; i++) {
         const currentAngle = i * angleStep - Math.PI / 2;
-        const labelX = centerPoint + Math.cos(currentAngle) * (maxRadius + 22);
+        const labelX = centerPoint + Math.cos(currentAngle) * (maxRadius + 26);
         const labelY = centerPoint + Math.sin(currentAngle) * (maxRadius + 18);
         
         if (Math.cos(currentAngle) > 0.1) ctx.textAlign = 'left';
