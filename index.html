@@ -10,10 +10,12 @@
             --card-bg: #1e293b;
             --text-color: #f8fafc;
             --text-muted: #94a3b8;
-            --primary-color: #3b82f6;
+            --primary-color: #475569; /* Neutral Slate Primary */
             --border-color: #334155;
             --accent-bg: #0f172a;
             --tooltip-bg: #020617;
+            --neutral-green: #10b981; /* Emerald green marker */
+            --neutral-gray: #64748b;  /* Calibrated Slate Gray */
         }
         * { box-sizing: border-box; }
         body {
@@ -36,13 +38,13 @@
         }
         h1 { text-align: center; color: #ffffff; margin-top: 5px; font-size: 1.5rem; letter-spacing: -0.5px; }
         .disclaimer {
-            background-color: #383a2e;
-            color: #fef08a;
+            background-color: #1e293b;
+            color: #94a3b8;
             padding: 12px;
             border-radius: 8px;
             font-size: 0.8rem;
             margin-bottom: 24px;
-            border: 1px solid #854d0e;
+            border: 1px solid var(--border-color);
             line-height: 1.4;
         }
         .question-block {
@@ -74,14 +76,14 @@
         input[type="range"]::-webkit-slider-runnable-track {
             width: 100%;
             height: 8px;
-            background: #475569;
+            background: #334155;
             border-radius: 4px;
         }
         input[type="range"]::-webkit-slider-thumb {
             height: 24px;
             width: 24px;
             border-radius: 50%;
-            background: var(--primary-color);
+            background: var(--neutral-green);
             cursor: pointer;
             -webkit-appearance: none;
             margin-top: -8px;
@@ -98,7 +100,7 @@
         }
         .current-value {
             font-weight: 700;
-            color: #38bdf8;
+            color: var(--neutral-green);
             font-size: 1.2rem;
             background: var(--accent-bg);
             padding: 4px 14px;
@@ -110,605 +112,48 @@
             display: block;
             width: 100%;
             padding: 16px;
-            background-color: var(--primary-color);
+            background-color: var(--neutral-green);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1.1rem;
             cursor: pointer;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
         button:active { transform: scale(0.98); }
         
         .results { display: none; }
         
         .type-verdict-box {
-            background: linear-gradient(135deg, #020617, #1e3a8a);
+            background: linear-gradient(135deg, #0f172a, #334155);
             color: white;
             padding: 24px 16px;
             border-radius: 12px;
             text-align: center;
             margin-bottom: 24px;
-            border: 1px solid #2563eb;
+            border: 1px solid var(--border-color);
         }
         .role-title {
             font-size: 1.1rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #38bdf8;
+            color: var(--neutral-green);
         }
         .type-code {
             font-size: 2.8rem;
             font-weight: 900;
             letter-spacing: 4px;
             margin: 8px 0;
+            color: #ffffff;
         }
         .type-description {
             font-size: 0.95rem;
             opacity: 0.95;
             line-height: 1.5;
             margin-top: 12px;
-            border-top: 1px solid rgba(255,255,255,0.15);
+            border-top: 1px solid rgba(255,255,255,0.1);
             padding-top: 12px;
             text-align: left;
         }
-
-        .axis-wrapper {
-            background: var(--accent-bg);
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border-color);
-        }
-        .axis-meta {
-            font-weight: 700;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            text-align: center;
-        }
-        
-        .axis-labels {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.95rem;
-            font-weight: bold;
-            margin-bottom: 8px;
-            gap: 8px;
-        }
-
-        .label-group {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            position: relative;
-        }
-
-        .pole-left { color: #38bdf8; }
-        .pole-right { color: #f59e0b; }
-        
-        .info-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            background: #475569;
-            color: white;
-            border-radius: 50%;
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
-        
-        .tooltip {
-            position: absolute;
-            bottom: 140%;
-            width: 240px;
-            background: var(--tooltip-bg);
-            color: white;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: normal;
-            line-height: 1.4;
-            display: none;
-            z-index: 100;
-            border: 1px solid #475569;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.6);
-            text-transform: none;
-            letter-spacing: normal;
-        }
-        
-        .label-group-left .tooltip { left: 0; text-align: left; }
-        .label-group-right .tooltip { right: 0; text-align: left; }
-
-        .tooltip::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            border-width: 6px;
-            border-style: solid;
-        }
-        .label-group-left .tooltip::after { left: 4px; border-color: var(--tooltip-bg) transparent transparent transparent; }
-        .label-group-right .tooltip::after { right: 4px; border-color: var(--tooltip-bg) transparent transparent transparent; }
-
-        .tooltip.active { display: block; }
-
-        .dual-metrics-container {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            margin-top: 6px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .spectrum-bar-bg {
-            background-color: #334155;
-            border-radius: 6px;
-            height: 20px;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .center-divider {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            background-color: rgba(255,255,255,0.4);
-            z-index: 2;
-        }
-        .indicator-block {
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 0%;
-            transition: width 0.8s ease-out, left 0.8s ease-out;
-        }
-        .indicator-block.to-left { background: linear-gradient(270deg, #38bdf8, #0284c7); }
-        .indicator-block.to-right { background: linear-gradient(90deg, #fbbf24, #b45309); }
-        .indicator-block.unipolar-fill {
-            left: 0;
-            background: linear-gradient(90deg, #64748b, #ef4444);
-            width: 0%;
-        }
-        .range-verdict {
-            font-size: 0.75rem;
-            margin-top: 8px;
-            font-weight: 600;
-            text-align: center;
-        }
-        .range-normal { color: #4ade80; }
-        .range-deviated { color: #f87171; }
-
-        /* Chart Canvas Architecture */
-        .chart-wrapper {
-            background: var(--accent-bg);
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 20px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .chart-title {
-            font-weight: 700;
-            font-size: 0.95rem;
-            margin-bottom: 16px;
-            color: #e2e8f0;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            text-align: center;
-        }
-        canvas {
-            max-width: 100%;
-            height: auto;
-            background-color: transparent;
-        }
-    </style>
-</head>
-<body>
-
-<div class="quiz-container">
-    <h1>Archetype Matrix</h1>
-    <div class="disclaimer">
-        <strong>Experimental Mobile Framework:</strong> Optimized for handheld displays. Tap any ⓘ icon next to a state name to toggle definitions; tap anywhere else to dismiss.
-    </div>
-
-    <div id="quiz-form">
-        <div id="questions-container"></div>
-        <button onclick="calculateResults()">Compile Matrix Overview</button>
-    </div>
-
-    <div id="results" class="results">
-        <div class="type-verdict-box">
-            <div id="computed-role-title" class="role-title">The Role Name</div>
-            <div class="type-code" id="computed-type-code">----</div>
-            <div class="type-description" id="computed-type-desc">Analyzing profile structures...</div>
-        </div>
-
-        <h2 style="font-size: 1.2rem; margin-top:24px;">Your Configuration Metrics</h2>
-        <div id="results-display"></div>
-        
-        <!-- Spider Chart Target Container -->
-        <div class="chart-wrapper">
-            <div class="chart-title">7-Dimensional Condition Surface Map</div>
-            <canvas id="spiderChart" width="360" height="360"></canvas>
-        </div>
-
-        <button onclick="window.location.reload()" style="margin-top: 24px; background-color: #475569;">Reset Matrix</button>
-    </div>
-</div>
-
-<script>
-const spectrumAxes = [
-    {
-        id: "regulatory",
-        title: "Cognitive Regulation Axis",
-        left: { name: "OCD Style", code: "O", def: "Intense drive for structural control, checking, symmetry, and routine compliance to mitigate anxiety." },
-        right: { name: "ADHD Style", code: "A", def: "High novelty-seeking, spontaneous impulsivity, fluid mental focus, and organic time blindness." },
-        normalMin: 35, normalMax: 65
-    },
-    {
-        id: "reactivity",
-        title: "Emotional Reactivity Axis",
-        left: { name: "Neurotic Style", code: "H", def: "Rapid emotional amplification, high sensitivity to social feedback, and acute landscape variations." },
-        right: { name: "Psychopathic Style", code: "P", def: "Deep structural detachment under extreme stress, minimal anxiety, and lowered visceral empathy." },
-        normalMin: 35, normalMax: 65
-    },
-    {
-        id: "socialEgo",
-        title: "Social Architecture Axis",
-        left: { name: "Autistic Style", code: "A", def: "Heavy reliance on explicit logical systems, strict baseline patterns, and unwritten-cue-free communication." },
-        right: { name: "Narcissistic Style", code: "N", def: "Expansive agentic ego structure driving high baseline self-evaluation and systemic validation metrics." },
-        normalMin: 35, normalMax: 65
-    },
-    {
-        id: "vitality",
-        title: "Pervasive Energy Scale",
-        left: { name: "Standard Vitality", code: "S", def: "Balanced operational engine unencumbered by systematic neuro-functional exhaustion parameters." },
-        right: { name: "Depressive Style", code: "D", def: "Systemic operational energy depletion, high execution friction, and structural pessimism variables." },
-        normalMin: 0, normalMax: 50
-    }
-];
-
-const matrixRoles = {
-    "OHAS": { title: "The Perfectionist Safe-Keeper", desc: "<strong>Profile Matrix Analysis:</strong> Rigorous protective structure. Combines high demand for systematic internal rule verification (OCD-leaning Dominant) with an incredibly responsive emotional compass (Neurotic). Socially operates via direct system data channels rather than status signaling games (Autistic). Backed by unencumbered functional energy (Standard Vitality), you protect operational baseline parameters cleanly." },
-    "OHAD": { title: "The Isolated Sentinel", desc: "<strong>Profile Matrix Analysis:</strong> High monitoring parameters clashing against systemic fuel starvation. You construct strict external rules and analytical patterns to safeguard a fragile internal landscape. Social connectivity parameters feel extremely taxing, prompting withdrawal into secure zones. Currently, high Depressive burden variables limit output, anchoring you to an introverted observation pattern." },
-    "OHNS": { title: "The Dramatic Orchestrator", desc: "<strong>Profile Matrix Analysis:</strong> High-impact social driver structure. Merges rigorous demands for administrative structure with an expressive, reactive communication loop. Your social configuration leverages systemic rules, status positions, and validation metrics (Narcissistic Dominant). Backed by high active energy, you position yourself effectively as a regulatory pillar in group operations." },
-    "OHND": { title: "The Fragile Sovereign", desc: "<strong>Profile Matrix Analysis:</strong> Severe friction signature. Your internal ego maps expect extreme systemic precision, recognition, and structural execution, paired with an acute emotional sensitivity to performance failure or criticism. Because your active energy scale features an over-threshold Depressive burden, follow-through capacity is highly limited, generating cycles of anxious paralysis." },
-    "OPAS": { title: "The Systemizing Engineer", desc: "<strong>Profile Matrix Analysis:</strong> Highly rationalized, low-vulnerability processing engine. Melds strict rule verification with absolute tactical calmness and fearlessness under high operational stress (Psychopathic Dominant). Social systems are navigated via literal, logical paths entirely decoupled from validation or emotional demands. Highly effective at debugging chaotic real-time crises cleanly." },
-    "OPAD": { title: "The Detached Analyst", desc: "<strong>Profile Matrix Analysis:</strong> Clinical cognitive isolation. Operates via an ultra-precise, systemizing approach buffered by an unbothered, absolute emotional detachment strategy. Because active energetic capacity is significantly suppressed by high Depressive burden values, you systematically avoid status battles and complex social networks, calculating data quietly from a distant safe frame." },
-    "OPNS": { title: "The Strategic Director", desc: "<strong>Profile Matrix Analysis:</strong> Maximized operational leverage template. Combines high structured calculation parameters, total crisis fearlessness, and an expansive, status-seeking ego framework. Backed by fully functional, unencumbered baseline energy, you engineer rules, leverage social networks aggressively, and steer complex systems toward targeted objectives cleanly." },
-    "OPND": { title: "The Cold Architect", desc: "<strong>Profile Matrix Analysis:</strong> Hidden structural coordinator. Possesses an ambitious ego blueprint that expects authoritative command over systems, backed by total emotional resilience to pressure. However, because you are currently running a high-burden Depressive energy state, you skip overt self-promotion. Instead, you design structures and direct variables from behind the scenes." },
-    "AHAS": { title: "The Creative Storm", desc: "<strong>Profile Matrix Analysis:</strong> Fluid exploratory framework. Driven by shifting novelty-seeking priorities and a highly flexible, open focus map (ADHD Dominant), connected to an intensely reactive emotional center. You analyze social systems using specialized, highly customized contextual maps rather than rigid hierarchy ranks. High active vitality allows fast, iterative adaptations." },
-    "AHAD": { title: "The Wandering Romantic", desc: "<strong>Profile Matrix Analysis:</strong> Introspective exploratory profile with constrained processing fuel. Features a highly flexible, rule-rejecting cognitive style and intense emotional sensitivity. Because your current energy scale tracks a high Depressive burden value, your mental paths rarely translate into physical real-time execution, driving deep, inward-facing conceptual processing." },
-    "AHNS": { title: "The Charismatic Maverick", desc: "<strong>Profile Matrix Analysis:</strong> High-influence improviser blueprint. Completely rejects standardized administrative rulebooks and schedules, relying on spontaneous bursts of insight. Your active emotional system responds quickly, pairing with an ambitious, status-seeking social matrix configuration. High baseline energy yields highly dynamic group positioning." },
-    "AHND": { title: "The Volatile Free-Agent", desc: "<strong>Profile Matrix Analysis:</strong> Erratic performance footprint. Shifts rapidly between new concepts while evading long-term structural tracking, paired with high vulnerability to friction or negative social metrics. Overt status goals exist, but an over-threshold Depressive burden profile creates severe execution bottlenecks, triggering cycles of intense excitement followed by rapid crashes." },
-    "APAS": { title: "The Independent Explorer", desc: "<strong>Profile Matrix Analysis:</strong> Self-contained tactical rogue. Pairs a highly flexible, opportunistic focus strategy with absolute emotional resilience and structural crisis fearlessness. Social engagement parameters avoid political status tracking entirely, relying on flat, direct, and literal communication tracks. Highly effective when dropped into unpredictable environments." },
-    "APAD": { title: "The Ghost Observer", desc: "<strong>Profile Matrix Analysis:</strong> Low-profile unencumbered drifter. Navigates reality with zero demand for rigid schedules or administrative restrictions, filtering inputs through an unbothered, hyper-calm emotional state. Because social architecture is highly insular and functional energy is heavily bound by a Depressive burden, you pass through environments safely invisible." },
-    "APNS": { title: "The Opportunistic Pioneer", desc: "<strong>Profile Matrix Analysis:</strong> Target-focused entrepreneurial design. Operates with a completely open, non-linear cognitive structure that spots immediate functional openings, backed by absolute fearlessness and a highly confident, status-oriented social architecture. Maximized energetic vitality yields immediate tactical adjustments to maximize advantage." },
-    "APND": { title: "The Drifting Outlaw", desc: "<strong>Profile Matrix Analysis:</strong> Autonomous off-grid configuration. Operates outside standard administrative frameworks and feels completely insulated from social expectations, authoritative demands, or external anxiety markers. While possessing an independent social ego, an elevated Depressive burden scale keeps you from empire building, prompting quiet, unhindered transit." }
-};
-
-const questions = [
-    { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", gain: 1.0 },
-    { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", gain: -1.0 },
-    { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain: 1.0 },
-    { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", gain: -1.0 },
-    { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", gain: 1.0 },
-    
-    { id: 6, text: "I experience rapidly shifting, intense emotions and feel deeply uncomfortable when environments feel cold or distant.", axis: "reactivity", gain: -1.0 },
-    { id: 7, text: "Even in deep crises or dangerous situations, I remain perfectly cold, fearless, and unbothered while others panic.", axis: "reactivity", gain: 1.0 },
-    { id: 8, text: "I am highly vulnerable to criticism or perceived rejection, often reacting with visible emotional distress.", axis: "reactivity", gain: -1.0 },
-    { id: 9, text: "Fear, guilt, and natural empathy are things I simply do not experience internally when crossing lines.", axis: "reactivity", gain: 1.0 },
-    { id: 10, text: "I find myself using dramatic behaviors or emotional outbursts just to ensure people are paying attention to me.", axis: "reactivity", gain: -1.0 },
-    
-    { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "socialEgo", gain: 1.0 },
-    { id: 12, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialEgo", gain: -1.0 },
-    { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "socialEgo", gain: 1.0 },
-    { id: 14, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialEgo", gain: -1.0 },
-    { id: 15, text: "I feel an intense wave of personal entitlement or superiority when dealing with standard everyday environments.", axis: "socialEgo", gain: 1.0 },
-    
-    { id: 16, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 },
-    { id: 17, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 },
-    { id: 18, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 1.0 },
-    { id: 19, text: "I preserve an active, highly energetic curiosity and look forward to what tomorrow brings.", axis: "vitality", gain: -1.0 },
-    { id: 20, text: "I feel physically light, mentally capable, and driven to connect dynamically with goals throughout the week.", axis: "vitality", gain: -1.0 }
-];
-
-const container = document.getElementById('questions-container');
-questions.forEach((q, index) => {
-    container.innerHTML += `
-        <div class="question-block">
-            <div class="question-text">${index + 1}. ${q.text}</div>
-            <div class="slider-container">
-                <div class="current-value" id="val-${q.id}">0</div>
-                <input type="range" id="q-${q.id}" min="-5" max="5" value="0" step="1" oninput="updateValue(${q.id}, this.value)">
-                <div class="slider-labels">
-                    <span>Disagree (-5)</span>
-                    <span>Neutral (0)</span>
-                    <span>Agree (+5)</span>
-                </div>
-            </div>
-        </div>
-    `;
-});
-
-function updateValue(id, val) {
-    document.getElementById(`val-${id}`).innerText = val > 0 ? `+${val}` : val;
-}
-
-function toggleTooltip(event, id) {
-    event.stopPropagation();
-    const targetTooltip = document.getElementById(id);
-    const wasActive = targetTooltip.classList.contains('active');
-    document.querySelectorAll('.tooltip').forEach(el => el.classList.remove('active'));
-    if (!wasActive) targetTooltip.classList.add('active');
-}
-
-document.addEventListener('click', function() {
-    document.querySelectorAll('.tooltip').forEach(el => el.classList.remove('active'));
-});
-
-function calculateResults() {
-    const axisTotals = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
-    const axisMaxes = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
-
-    questions.forEach(q => {
-        const val = parseInt(document.getElementById(`q-${q.id}`).value);
-        axisTotals[q.axis] += val * q.gain;
-        axisMaxes[q.axis] += 5 * Math.abs(q.gain);
-    });
-
-    document.getElementById('quiz-form').style.display = 'none';
-    document.getElementById('results').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    const display = document.getElementById('results-display');
-    display.innerHTML = '';
-
-    let generatedTypeCode = "";
-    
-    // Store exact percent metrics for our 7-axis spider chart
-    let dimensions = {
-        "OCD": 0, "ADHD": 0, "Neurotic": 0, "Psychopathic": 0, "Autistic": 0, "Narcissistic": 0, "Depressive": 0
-    };
-
-    spectrumAxes.forEach((axis, index) => {
-        const currentScore = axisTotals[axis.id];
-        const maxScore = axisMaxes[axis.id];
-        
-        const rawPercentage = ((currentScore - (-maxScore)) / (maxScore - (-maxScore))) * 100;
-        const rightPercentage = Math.round(rawPercentage);
-        const leftPercentage = 100 - rightPercentage;
-
-        if (axis.id === "vitality") {
-            const isDepressive = rightPercentage > 50;
-            generatedTypeCode += isDepressive ? axis.right.code : axis.left.code;
-            dimensions["Depressive"] = rightPercentage;
-
-            const isNormal = (rightPercentage >= axis.normalMin && rightPercentage <= axis.normalMax);
-            const statusClass = isNormal ? "range-normal" : "range-deviated";
-            const statusText = isDepressive ? `Depressive State Flagged (>50%)` : `Optimal Energy State (≤50%)`;
-
-            display.innerHTML += `
-                <div class="axis-wrapper">
-                    <div class="axis-meta">${axis.title}</div>
-                    <div class="axis-labels">
-                        <div class="label-group label-group-left">
-                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-l-${index}')">ⓘ</span>
-                            <span style="color:#94a3b8;">${axis.left.name}</span>
-                            <div class="tooltip" id="tt-l-${index}"><strong>${axis.left.name}:</strong> ${axis.left.def}</div>
-                        </div>
-                        <div class="label-group label-group-right">
-                            <span class="pole-right">Burden: ${rightPercentage}%</span>
-                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-r-${index}')">ⓘ</span>
-                            <div class="tooltip" id="tt-r-${index}"><strong>${axis.right.name}:</strong> ${axis.right.def}</div>
-                        </div>
-                    </div>
-                    <div class="spectrum-bar-bg">
-                        <div class="indicator-block unipolar-fill" id="bar-${axis.id}"></div>
-                    </div>
-                    <div class="range-verdict ${statusClass}">
-                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
-                    </div>
-                </div>
-            `;
-            
-            setTimeout(() => {
-                const bar = document.getElementById(`bar-${axis.id}`);
-                if (bar) bar.style.width = rightPercentage + "%";
-            }, 100);
-
-        } else {
-            const leftDominant = leftPercentage >= rightPercentage;
-            generatedTypeCode += leftDominant ? axis.left.code : axis.right.code;
-
-            // Map standard spectrum endpoints to the 7-D schema
-            if (axis.id === "regulatory") { dimensions["OCD"] = leftPercentage; dimensions["ADHD"] = rightPercentage; }
-            if (axis.id === "reactivity") { dimensions["Neurotic"] = leftPercentage; dimensions["Psychopathic"] = rightPercentage; }
-            if (axis.id === "socialEgo") { dimensions["Autistic"] = leftPercentage; dimensions["Narcissistic"] = rightPercentage; }
-
-            const isNormal = (leftPercentage >= axis.normalMin && leftPercentage <= axis.normalMax);
-            const statusClass = isNormal ? "range-normal" : "range-deviated";
-            const statusText = isNormal ? "Normal Spectrum Variance" : "Elevated Divergence Detected";
-
-            let side = leftDominant ? "left" : "right";
-            let displayBarWidth = Math.abs(leftPercentage - 50) * 2;
-
-            display.innerHTML += `
-                <div class="axis-wrapper">
-                    <div class="axis-meta">${axis.title}</div>
-                    <div class="axis-labels">
-                        <div class="label-group label-group-left">
-                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-l-${index}')">ⓘ</span>
-                            <span class="pole-left" style="${leftDominant ? 'text-decoration:underline;' : ''}">${axis.left.name}</span>
-                            <div class="tooltip" id="tt-l-${index}"><strong>${axis.left.name}:</strong> ${axis.left.def}</div>
-                        </div>
-                        <div class="label-group label-group-right">
-                            <span class="pole-right" style="${!leftDominant ? 'text-decoration:underline;' : ''}">${axis.right.name}</span>
-                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-r-${index}')">ⓘ</span>
-                            <div class="tooltip" id="tt-r-${index}"><strong>${axis.right.name}:</strong> ${axis.right.def}</div>
-                        </div>
-                    </div>
-                    <div class="spectrum-bar-bg">
-                        <div class="center-divider"></div>
-                        <div class="indicator-block ${side === 'left' ? 'to-left' : 'to-right'}" id="bar-${axis.id}"></div>
-                    </div>
-                    <div class="dual-metrics-container">
-                        <span>${axis.left.name}: ${leftPercentage}%</span>
-                        <span>${axis.right.name}: ${rightPercentage}%</span>
-                    </div>
-                    <div class="range-verdict ${statusClass}">
-                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
-                    </div>
-                </div>
-            `;
-
-            setTimeout(() => {
-                const bar = document.getElementById(`bar-${axis.id}`);
-                if (bar) {
-                    if (side === "right") {
-                        bar.style.left = "50%";
-                        bar.style.width = (displayBarWidth / 2) + "%";
-                    } else if (side === "left") {
-                        bar.style.left = (50 - (displayBarWidth / 2)) + "%";
-                        bar.style.width = (displayBarWidth / 2) + "%";
-                    }
-                }
-            }, 100);
-        }
-    });
-
-    const activeRole = matrixRoles[generatedTypeCode] || { title: "The Balanced Matrix", desc: "Your profile maps precisely to the central baseline intersection of the vector fields." };
-    
-    document.getElementById('computed-role-title').innerText = activeRole.title;
-    document.getElementById('computed-type-code').innerText = generatedTypeCode;
-    document.getElementById('computed-type-desc').innerHTML = activeRole.desc;
-
-    // Trigger Spider Canvas Rendering Engine
-    drawSpiderChart(dimensions);
-}
-
-function drawSpiderChart(data) {
-    const canvas = document.getElementById('spiderChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
-    // Core structure variables
-    const width = canvas.width;
-    const height = canvas.height;
-    const centerPoint = width / 2;
-    const maxRadius = centerPoint - 45; 
-    
-    const labels = Object.keys(data);
-    const values = Object.values(data);
-    const totalSides = labels.length;
-    const angleStep = (Math.PI * 2) / totalSides;
-
-    // Reset layout for crisp drawing
-    ctx.clearRect(0, 0, width, height);
-
-    // 1. Draw Concentric Grid Rings (25%, 50%, 75%, 100%)
-    const gridLevels = 4;
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 1;
-    
-    for (let r = 1; r <= gridLevels; r++) {
-        const radius = (maxRadius / gridLevels) * r;
-        ctx.beginPath();
-        for (let i = 0; i < totalSides; i++) {
-            const currentAngle = i * angleStep - Math.PI / 2;
-            const x = centerPoint + Math.cos(currentAngle) * radius;
-            const y = centerPoint + Math.sin(currentAngle) * radius;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.stroke();
-    }
-
-    // 2. Draw Geometric Spoke Lines
-    ctx.beginPath();
-    for (let i = 0; i < totalSides; i++) {
-        const currentAngle = i * angleStep - Math.PI / 2;
-        const x = centerPoint + Math.cos(currentAngle) * maxRadius;
-        const y = centerPoint + Math.sin(currentAngle) * maxRadius;
-        ctx.moveTo(centerPoint, centerPoint);
-        ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // 3. Draw & Map User Metric Surface Polygon
-    ctx.beginPath();
-    for (let i = 0; i < totalSides; i++) {
-        const currentAngle = i * angleStep - Math.PI / 2;
-        // Normalize percentage values to radius bounds
-        const normalizedRadius = (values[i] / 100) * maxRadius;
-        const x = centerPoint + Math.cos(currentAngle) * normalizedRadius;
-        const y = centerPoint + Math.sin(currentAngle) * normalizedRadius;
-        
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    
-    // Fill surface profile
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
-    ctx.fill();
-    // Stroke surface baseline contour
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
-
-    // 4. Render Peripheral Node Vertices & Data Dots
-    for (let i = 0; i < totalSides; i++) {
-        const currentAngle = i * angleStep - Math.PI / 2;
-        const normalizedRadius = (values[i] / 100) * maxRadius;
-        const x = centerPoint + Math.cos(currentAngle) * normalizedRadius;
-        const y = centerPoint + Math.sin(currentAngle) * normalizedRadius;
-
-        ctx.fillStyle = '#f59e0b';
-        ctx.beginPath();
-        ctx.arc(x, y, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // 5. Smart Vector Label Formatting Engine
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    for (let i = 0; i < totalSides; i++) {
-        const currentAngle = i * angleStep - Math.PI / 2;
-        // Push labels slightly outside the maximum outer ring
-        const labelX = centerPoint + Math.cos(currentAngle) * (maxRadius + 22);
-        const labelY = centerPoint + Math.sin(currentAngle) * (maxRadius + 18);
-        
-        // Dynamically adjust anchor positions based on geometric hemisphere vector
-        if (Math.cos(currentAngle) > 0.1) ctx.textAlign = 'left';
-        else if (Math.cos(currentAngle) < -0.1) ctx.textAlign = 'right';
-        else ctx.textAlign = 'center';
-
-        if (Math.sin(currentAngle) > 0.8) ctx.textBaseline = 'top';
-        else if (Math.sin(currentAngle) < -0.8) ctx.textBaseline = 'bottom';
-        else ctx.textBaseline = 'middle';
-
-        ctx.fillText(`${labels[i]} (${values[i]}%)`, labelX, labelY);
-    }
-}
-</script>
-
-</body>
-</html>
