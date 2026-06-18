@@ -12,6 +12,7 @@
             --primary-color: #3b82f6;
             --border-color: #e2e8f0;
             --accent-bg: #f1f5f9;
+            --tooltip-bg: #0f172a;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -23,7 +24,7 @@
             justify-content: center;
         }
         .quiz-container {
-            max-width: 750px;
+            max-width: 800px;
             width: 100%;
             background: var(--card-bg);
             padding: 40px;
@@ -96,7 +97,6 @@
         button:hover { background-color: #2563eb; }
         button:active { transform: scale(0.98); }
         
-        /* Spectrum Matrix Results Elements */
         .results { display: none; }
         
         .type-verdict-box {
@@ -130,6 +130,7 @@
             margin-top: 15px;
             border-top: 1px solid rgba(255,255,255,0.1);
             padding-top: 15px;
+            text-align: left;
         }
 
         .axis-wrapper {
@@ -141,7 +142,8 @@
         }
         .axis-meta {
             display: flex;
-            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
             font-weight: 700;
             font-size: 1rem;
             margin-bottom: 10px;
@@ -149,10 +151,61 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
+        
+        /* Tooltip Style */
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: #94a3b8;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            cursor: help;
+            position: relative;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .info-icon:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        .tooltip {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 260px;
+            background: var(--tooltip-bg);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: normal;
+            line-height: 1.4;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--tooltip-bg) transparent transparent transparent;
+        }
+
         .axis-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             margin-bottom: 8px;
         }
@@ -175,6 +228,9 @@
             background-color: rgba(255,255,255,0.6);
             z-index: 2;
         }
+        .unipolar-bg {
+            background-color: #e2e8f0;
+        }
         .indicator-block {
             height: 100%;
             position: absolute;
@@ -188,6 +244,17 @@
         }
         .indicator-block.to-right {
             background: linear-gradient(90deg, #fbbf24, #b45309);
+        }
+        .indicator-block.unipolar-fill {
+            left: 0;
+            background: linear-gradient(90deg, #94a3b8, #475569);
+            width: 0%;
+        }
+        .ocd-callout {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #0369a1;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -205,7 +272,6 @@
     </div>
 
     <div id="results" class="results">
-        <!-- Upgraded MBTI Code Verdict Block -->
         <div class="type-verdict-box">
             <div id="computed-role-title" class="role-title">The Role Name</div>
             <div class="type-code" id="computed-type-code">----</div>
@@ -222,78 +288,119 @@
 </div>
 
 <script>
-// Spectrum Axes Meta Definitions mapping left values as negative vectors, right as positive vectors
 const spectrumAxes = [
     {
         id: "regulatory",
         title: "Cognitive Regulation Axis",
-        left: { name: "OCD Style", key: "OCD", code: "O" },
-        right: { name: "ADHD Style", key: "ADHD", code: "A" }
+        left: { name: "OCD Style", key: "OCD", code: "O", def: "Characterized by an intense drive for structural control, precision, symmetry, routines, and checking behaviors to mitigate anxiety." },
+        right: { name: "ADHD Style", key: "ADHD", code: "A", def: "Characterized by high novelty-seeking, focus fragmentation, spontaneous impulse navigation, and difficulty with linear time boundaries." }
     },
     {
         id: "reactivity",
         title: "Emotional Reactivity Axis",
-        left: { name: "Neurotic / Histrionic Style", key: "Neurotic", code: "H" },
-        right: { name: "Psychopathic Style", key: "Psychopathy", code: "P" }
+        left: { name: "Neurotic / Histrionic Style", key: "Neurotic", code: "H", def: "Characterized by rapid emotional amplification, acute sensitivity to social feedback, and expressive dramatic orientation." },
+        right: { name: "Psychopathic Style", key: "Psychopathy", code: "P", def: "Characterized by emotional detachment under severe pressure, low baseline fear responses, and low natural emotional empathy." }
     },
     {
         id: "socialEgo",
         title: "Social Architecture Axis",
-        left: { name: "Autistic Style", key: "Autism", code: "A" },
-        right: { name: "Narcissistic Style", key: "Narcissism", code: "N" }
+        left: { name: "Autistic Style", key: "Autism", code: "A", def: "Characterized by a heavy reliance on immutable routines, systemizing data inputs, and direct, unwritten-cue-free communication." },
+        right: { name: "Narcissistic Style", key: "Narcissism", code: "N", def: "Characterized by an expansive agentic ego structure, constant status-striving, and a deep hunger for external systemic validation." }
     },
     {
         id: "vitality",
         title: "Pervasive Energy Scale",
-        left: { name: "Standard Vitality", key: "Vital", code: "S" },
-        right: { name: "Depressive Style", key: "Depression", code: "D" }
+        left: { name: "Standard Vitality (0%)", key: "Vital", code: "S", def: "A healthy, balanced energetic operational baseline capable of execution and looking forward to goals." },
+        right: { name: "Depressive Style (100%)", key: "Depression", code: "D", def: "Characterized by systemic energy depletion, flattened emotional baselines, high execution friction, and structural pessimism." }
     }
 ];
 
-// 16 Role Profiles Directory
 const matrixRoles = {
-    "OHAS": { title: "The Perfectionist Safe-Keeper", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, you rely on specialized systemized logic, backed by a resilient operational vitality baseline." },
-    "OHAD": { title: "The Isolated Sentinel", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, you rely on specialized systemized logic, while experiencing a localized depletion in baseline energy." },
-    "OHNS": { title: "The Dramatic Orchestrator", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, backed by a resilient operational vitality baseline." },
-    "OHND": { title: "The Fragile Sovereign", desc: "You orient heavily toward structured control, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, while experiencing a localized depletion in baseline energy." },
-    "OPAS": { title: "The Systemizing Engineer", desc: "You orient heavily toward structured control, paired with deep logical detachment under pressure. Socially, you rely on specialized systemized logic, backed by a resilient operational vitality baseline." },
-    "OPAD": { title: "The Detached Analyst", desc: "You orient heavily toward structured control, paired with deep logical detachment under pressure. Socially, you rely on specialized systemized logic, while experiencing a localized depletion in baseline energy." },
-    "OPNS": { title: "The Strategic Director", desc: "The ultimate executive pattern. Structured control combined with total logical detachment, high ego-assertion, and high operational energy." },
-    "OPND": { title: "The Cold Architect", desc: "You orient heavily toward structured control, paired with deep logical detachment under pressure. Socially, your profile leans toward high ego-assertion, while experiencing a localized depletion in baseline energy." },
-    "AHAS": { title: "The Creative Storm", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, you lean on specialized systemized logic, backed by structural vitality." },
-    "AHAD": { title: "The Wandering Romantic", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, you lean on specialized systemized logic, alongside temporary energy depletion." },
-    "AHNS": { title: "The Charismatic Maverick", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, backed by systemic vitality." },
-    "AHND": { title: "The Volatile Free-Agent", desc: "You navigate environments via flexible spontaneous impulses, paired with high emotional sensitivity. Socially, your profile leans toward high ego-assertion, with visible baseline energy depletion." },
-    "APAS": { title: "The Independent Explorer", desc: "Flexible spontaneous impulses combined with calm logical detachment. Socially systemized and driven by a strong, resilient vitality loop." },
-    "APAD": { title: "The Ghost Observer", desc: "You navigate environments via flexible spontaneous impulses, paired with deep logical detachment under pressure. Socially systemized, showing a low-energy baseline posture." },
-    "APNS": { title: "The Opportunistic Pioneer", desc: "Spontaneous flexibility combined with absolute fearlessness under pressure, high ego-assertion, and high baseline goal-striving energy." },
-    "APND": { title: "The Drifting Outlaw", desc: "You navigate environments via flexible spontaneous impulses, paired with deep logical detachment under pressure. Socially ego-assertive, operating on lowered systemic baseline energy." }
+    "OHAS": { 
+        title: "The Perfectionist Safe-Keeper", 
+        desc: "<strong>Deep Profile Analysis:</strong> You possess a highly structured, ultra-precise operational map. You feel an intense drive to build internal order and regulatory checks (OCD-leaning), fueled by a sensitive emotional compass that reads shifts instantly (Neurotic). Socially, you choose highly systematic, direct logic lanes rather than playing typical political ego games (Autistic style). Thanks to a robust, highly resilient energy reserve (Standard Vitality), you deploy this rigorous framework with endless focus, serving as a vital protector of systemic integrity and flawless execution." 
+    },
+    "OHAD": { 
+        title: "The Isolated Sentinel", 
+        desc: "<strong>Deep Profile Analysis:</strong> This structure is marked by intense cognitive self-policing and vivid emotional responsiveness, running up against a severe baseline energy drop. You work constantly to build external symmetry and rules to anchor a sensitive inner landscape. Because social pleasantries feel taxing and confusing, you pull back into private, system-driven zones. Right now, a heavy sense of fatigue slows down your daily execution, causing you to watch the world safely from your defensive perimeter." 
+    },
+    "OHNS": { 
+        title: "The Dramatic Orchestrator", 
+        desc: "<strong>Deep Profile Analysis:</strong> A dynamic personality mix. You blend a strong demand for order, routine, and rules with a highly vibrant, emotionally reactive presentation. Unlike isolated profiles, your social engine is aggressively focused on validation, status, and recognition (Narcissistic leaning). Powered by a strong energy loop, you use your organizational talents to capture attention, command attention in groups, and structure your environment so you remain the central point of influence." 
+    },
+    "OHND": { 
+        title: "The Fragile Sovereign", 
+        desc: "<strong>Deep Profile Analysis:</strong> This configuration displays a vivid clash between high aspirations and low functional fuel. You have an internal map that expects excellence, praise, and strict structure, combined with high emotional sensitivity to any perceived slight or failure. However, because your pervasive energy bar is highly depleted, you lack the physical momentum to build your ideal world. This often leads to a cycle of high anxiety, defensive pride, and sudden exhaustion." 
+    },
+    "OPAS": { 
+        title: "The Systemizing Engineer", 
+        desc: "<strong>Deep Profile Analysis:</strong> An exceptionally cool, highly rational system. You pair a strict drive for order and checking parameters with an uncanny emotional detachment under pressure (Psychopathic leaning). Socially, you operate on direct, structural truths, completely ignoring standard emotional signals or status posturing. Backed by steady energy reserves, you excel at breaking down complex, dangerous, or highly technical problems into actionable, logical rules without getting rattled." 
+    },
+    "OPAD": { 
+        title: "The Detached Analyst", 
+        desc: "<strong>Deep Profile Analysis:</strong> This blueprint matches deep logical isolation with low active energy. You look at life through a highly structured, systematic lens, calculating patterns safely behind a wall of cold, unbothered emotional distance. Because your energy baseline is heavily compressed, you rarely spend fuel on social interactions or building status networks. Instead, you process data quietly, conserving your energy while solving complex problems from afar." 
+    },
+    "OPNS": { 
+        title: "The Strategic Director", 
+        desc: "<strong>Deep Profile Analysis:</strong> One of the most dominant executive structures in the matrix. You bring together highly organized, systematic processing, absolute fearlessness under stress, and an ambitious, status-driven social architecture. Supported by a highly active, fully charged energy engine, you move through environments with clear intent, engineering rules and utilizing networks to accomplish your high-reaching tactical goals." 
+    },
+    "OPND": { 
+        title: "The Cold Architect", 
+        desc: "<strong>Deep Profile Analysis:</strong> A clinical, highly strategic blueprint that operates with limited physical energy. You possess an ambitious ego map that expects personal authority and perfection, matching a cold, calculating calmness that is completely unfazed by social pressure. Because you are navigating a temporary energy low, you don't engage in loud self-promotion. Instead, you quietly build systems, orchestrate plans behind the scenes, and cut out messy emotional variables." 
+    },
+    "AHAS": { 
+        title: "The Creative Storm", 
+        desc: "<strong>Deep Profile Analysis:</strong> This personality thrives on high-fluidity, flexible focus, and spontaneous exploration (ADHD style), driven by a highly sensitive, deeply reactive emotional center. Socially, you analyze interactions using highly specific, personal system patterns rather than standard corporate status ladders. Supported by a healthy energy reserve, you translate your shifting insights into rapid, highly passionate creative output, easily pivoting whenever a new spark captures your focus." 
+    },
+    "AHAD": { 
+        title: "The Wandering Romantic", 
+        desc: "<strong>Deep Profile Analysis:</strong> A structure marked by highly fluid, shifting thoughts and intense emotional depth, currently constrained by low energetic output. You run away from rigid schedules and rules, preferring to drift toward novel ideas, but you feel the emotional weight of your surroundings deeply. Because your social battery drains quickly and your energy baseline is low, these creative travels happen mostly in your mind, resulting in an introspective, deeply reflective lifestyle." 
+    },
+    "AHNS": { 
+        title: "The Charismatic Maverick", 
+        desc: "<strong>Deep Profile Analysis:</strong> A magnetic, highly adaptable profile. You reject rigid rules and standard structures, opting instead to ride sudden bursts of inspiration and novelty. Your emotional system amplifies reactions quickly, which combines with an ambitious, status-seeking social presence. Fueled by high energy, you excel at charming crowds, improvising your way through obstacles, and rewriting rules on the fly to keep yourself at the top of the social ladder." 
+    },
+    "AHND": { 
+        title: "The Volatile Free-Agent", 
+        desc: "<strong>Deep Profile Analysis:</strong> This alignment shows a highly unpredictable inner world. You shift rapidly between new ideas while avoiding structured commitments, experiencing heightened emotional sensitivity to setbacks. You desire status, personal freedom, and recognition, but a low energy baseline makes it incredibly difficult to follow through on your plans. This creates a painful cycle of starting things with high excitement, only to face immediate exhaustion." 
+    },
+    "APAS": { 
+        title: "The Independent Explorer", 
+        desc: "<strong>Deep Profile Analysis:</strong> A highly adaptable, completely self-contained operator. You combine a loose, spontaneous approach to focus with an unshakeable, fear-free emotional calm. Socially, you interact through a literal, direct communication style, showing zero interest in social games or ego-driven status hierarchies. Backed by steady physical energy, you move comfortably through unstructured or dangerous environments, solving problems calmly as they appear." 
+    },
+    "APAD": { 
+        title: "The Ghost Observer", 
+        desc: "<strong>Deep Profile Analysis:</strong> This configuration represents a quiet, unstructured detachment. You navigate your world with flexible, low-demand schedules, processing life through a calm, unbothered lens. Because you possess a deeply introverted social architecture and a heavily compressed energy supply, you rarely step forward to lead or seek recognition. You prefer to step completely out of the spotlight, quietly drifting through life with minimal friction." 
+    },
+    "APNS": { 
+        title: "The Opportunistic Pioneer", 
+        desc: "<strong>Deep Profile Analysis:</strong> A highly fluid, fearless, and explicitly target-focused profile. You have zero desire for rigid routines or administrative handbooks, choosing instead to spot and seize immediate openings. You possess total emotional calmness under pressure and an ambitious, status-driven social design. Backed by a powerful energy loop, you effortlessly navigate chaotic environments, using your charm and fearlessness to secure personal wins." 
+    },
+    "APND": { 
+        title: "The Drifting Outlaw", 
+        desc: "<strong>Deep Profile Analysis:</strong> This pattern operates outside standard social and systemic rules. You reject regular structures and feel no pressure from authority or social anxiety, viewing life through a cool, detached lens. Your social approach is highly independent and self-focused. Because you are running on a low energy baseline, you rarely bother building empires or fighting for status; you simply move through life on your own terms, conserving fuel and avoiding external control." 
+    }
 };
 
-// Balanced 20-Question Matrix Array. Every single question explicitly provides directional metric gains.
 const questions = [
-    // 1. Cognitive Regulation Axis (Negative pulls O, Positive pulls A)
     { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", gain: 1.0 },
     { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", gain: -1.0 },
     { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain: 1.0 },
     { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", gain: -1.0 },
     { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", gain: 1.0 },
     
-    // 2. Emotional Reactivity Axis (Negative pulls H, Positive pulls P)
     { id: 6, text: "I experience rapidly shifting, intense emotions and feel deeply uncomfortable when environments feel cold or distant.", axis: "reactivity", gain: -1.0 },
     { id: 7, text: "Even in deep crises or dangerous situations, I remain perfectly cold, fearless, and unbothered while others panic.", axis: "reactivity", gain: 1.0 },
     { id: 8, text: "I am highly vulnerable to criticism or perceived rejection, often reacting with visible emotional distress.", axis: "reactivity", gain: -1.0 },
     { id: 9, text: "Fear, guilt, and natural empathy are things I simply do not experience internally when crossing lines.", axis: "reactivity", gain: 1.0 },
     { id: 10, text: "I find myself using dramatic behaviors or emotional outbursts just to ensure people are paying attention to me.", axis: "reactivity", gain: -1.0 },
     
-    // 3. Social Architecture Axis (Negative pulls A, Positive pulls N)
     { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "socialEgo", gain: 1.0 },
     { id: 12, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialEgo", gain: -1.0 },
     { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "socialEgo", gain: 1.0 },
     { id: 14, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialEgo", gain: -1.0 },
     { id: 15, text: "I feel an intense wave of personal entitlement or superiority when dealing with standard everyday environments.", axis: "socialEgo", gain: 1.0 },
     
-    // 4. Pervasive Energy Scale (Negative pulls S, Positive pulls D)
     { id: 16, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 },
     { id: 17, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 },
     { id: 18, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 1.0 },
@@ -301,7 +408,6 @@ const questions = [
     { id: 20, text: "I feel physically light, mentally capable, and driven to connect dynamically with goals throughout the week.", axis: "vitality", gain: -1.0 }
 ];
 
-// Inject explicit stepped option ranges
 const container = document.getElementById('questions-container');
 questions.forEach((q, index) => {
     container.innerHTML += `
@@ -341,6 +447,7 @@ function calculateResults() {
     display.innerHTML = '';
 
     let generatedTypeCode = "";
+    let ocdPercentage = 0;
 
     spectrumAxes.forEach(axis => {
         const currentScore = axisTotals[axis.id];
@@ -348,55 +455,96 @@ function calculateResults() {
         
         let side = "center";
         let displayPercentage = 0;
-        
-        if (currentScore > 0) {
-            side = "right";
-            displayPercentage = Math.round((currentScore / maxScore) * 100);
-            generatedTypeCode += axis.right.code;
-        } else if (currentScore < 0) {
-            side = "left";
-            displayPercentage = Math.round((Math.abs(currentScore) / maxScore) * 100);
-            generatedTypeCode += axis.left.code;
-        } else {
-            side = "left";
-            displayPercentage = 0;
-            generatedTypeCode += axis.left.code;
+
+        // Calculate specialized OCD tracking data out of the Cognitive Regulation Axis
+        if (axis.id === "regulatory") {
+            const minPossibleScore = -maxScore;
+            ocdPercentage = Math.round(((currentScore - minPossibleScore) / (maxScore - minPossibleScore)) * 100);
+            ocdPercentage = 100 - ocdPercentage; // Invert so max negative score = 100% OCD
         }
 
-        display.innerHTML += `
-            <div class="axis-wrapper">
-                <div class="axis-meta">${axis.title}</div>
-                <div class="axis-labels">
-                    <span class="pole-left">${axis.left.name} ${side === 'left' ? `(${displayPercentage}%)` : ''}</span>
-                    <span class="pole-right">${side === 'right' ? `(${displayPercentage}%)` : ''} ${axis.right.name}</span>
-                </div>
-                <div class="spectrum-bar-bg">
-                    <div class="center-divider"></div>
-                    <div class="indicator-block ${side === 'left' ? 'to-left' : 'to-right'}" id="bar-${axis.id}"></div>
-                </div>
-            </div>
-        `;
+        if (axis.id === "vitality") {
+            // Unipolar Scale Transformation: maps from -Max (0% Depression) to +Max (100% Depression)
+            const minPossibleScore = -maxScore;
+            displayPercentage = Math.round(((currentScore - minPossibleScore) / (maxScore - minPossibleScore)) * 100);
+            generatedTypeCode += (currentScore > 0) ? axis.right.code : axis.left.code;
 
-        setTimeout(() => {
-            const bar = document.getElementById(`bar-${axis.id}`);
-            if (bar) {
-                if (side === "right") {
-                    bar.style.left = "50%";
-                    bar.style.width = (displayPercentage / 2) + "%";
-                } else if (side === "left") {
-                    bar.style.left = (50 - (displayPercentage / 2)) + "%";
-                    bar.style.width = (displayPercentage / 2) + "%";
-                }
+            display.innerHTML += `
+                <div class="axis-wrapper">
+                    <div class="axis-meta">
+                        ${axis.title}
+                        <span class="info-icon">ⓘ<span class="tooltip"><strong>${axis.right.name}:</strong> ${axis.right.def}<br><br><strong>${axis.left.name}:</strong> ${axis.left.def}</span></span>
+                    </div>
+                    <div class="axis-labels">
+                        <span class="pole-left">${axis.left.name}</span>
+                        <span class="pole-right">Depressive Burden Profile (${displayPercentage}%)</span>
+                    </div>
+                    <div class="spectrum-bar-bg unipolar-bg">
+                        <div class="indicator-block unipolar-fill" id="bar-${axis.id}"></div>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const bar = document.getElementById(`bar-${axis.id}`);
+                if (bar) bar.style.width = displayPercentage + "%";
+            }, 100);
+
+        } else {
+            // Standard Bipolar Mapping Architecture
+            if (currentScore > 0) {
+                side = "right";
+                displayPercentage = Math.round((currentScore / maxScore) * 100);
+                generatedTypeCode += axis.right.code;
+            } else {
+                side = "left";
+                displayPercentage = Math.round((Math.abs(currentScore) / maxScore) * 100);
+                generatedTypeCode += axis.left.code;
             }
-        }, 100);
+
+            let ocdCalloutMarkup = "";
+            if (axis.id === "regulatory") {
+                ocdCalloutMarkup = `<div class="ocd-callout">Absolute OCD Style Weight: ${ocdPercentage}%</div>`;
+            }
+
+            display.innerHTML += `
+                <div class="axis-wrapper">
+                    <div class="axis-meta">
+                        ${axis.title}
+                        <span class="info-icon">ⓘ<span class="tooltip"><strong>${axis.left.name}:</strong> ${axis.left.def}<br><br><strong>${axis.right.name}:</strong> ${axis.right.def}</span></span>
+                    </div>
+                    <div class="axis-labels">
+                        <span class="pole-left">${axis.left.name} ${side === 'left' ? `(${displayPercentage}%)` : ''}</span>
+                        <span class="pole-right">${side === 'right' ? `(${displayPercentage}%)` : ''} ${axis.right.name}</span>
+                    </div>
+                    <div class="spectrum-bar-bg">
+                        <div class="center-divider"></div>
+                        <div class="indicator-block ${side === 'left' ? 'to-left' : 'to-right'}" id="bar-${axis.id}"></div>
+                    </div>
+                    ${ocdCalloutMarkup}
+                </div>
+            `;
+
+            setTimeout(() => {
+                const bar = document.getElementById(`bar-${axis.id}`);
+                if (bar) {
+                    if (side === "right") {
+                        bar.style.left = "50%";
+                        bar.style.width = (displayPercentage / 2) + "%";
+                    } else if (side === "left") {
+                        bar.style.left = (50 - (displayPercentage / 2)) + "%";
+                        bar.style.width = (displayPercentage / 2) + "%";
+                    }
+                }
+            }, 100);
+        }
     });
 
-    // Populate MBTI-Style Role Profile Outputs
     const activeRole = matrixRoles[generatedTypeCode] || { title: "The Balanced Matrix", desc: "Your profile maps precisely to the central baseline intersection of the vector fields." };
     
     document.getElementById('computed-role-title').innerText = activeRole.title;
     document.getElementById('computed-type-code').innerText = generatedTypeCode;
-    document.getElementById('computed-type-desc').innerText = activeRole.desc;
+    document.getElementById('computed-type-desc').innerHTML = activeRole.desc;
 }
 </script>
 
