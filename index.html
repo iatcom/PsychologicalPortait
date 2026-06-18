@@ -11,6 +11,8 @@
             --text-color: #f8fafc;
             --text-muted: #94a3b8;
             --primary-color: #3b82f6;
+            --success-color: #10b981;
+            --accent-color: #f59e0b;
             --border-color: #334155;
             --accent-bg: #0f172a;
             --tooltip-bg: #020617;
@@ -29,6 +31,7 @@
         .quiz-container {
             max-width: 100%;
             width: 100%;
+            max-width: 600px;
             background: var(--card-bg);
             padding: 20px 16px;
             border-radius: 12px;
@@ -118,9 +121,32 @@
             cursor: pointer;
             font-weight: 600;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            margin-bottom: 12px;
         }
         button:active { transform: scale(0.98); }
         
+        .action-btn-group {
+            display: block;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #475569;
+            box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
+        }
+
+        .btn-accent {
+            background-color: #7c3aed;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
         .results { display: none; }
         
         .type-verdict-box {
@@ -388,7 +414,11 @@
             <div class="mbti-text" id="mbti-desc-text">Generating strategic operational insights...</div>
         </div>
 
-        <button onclick="window.location.reload()" style="margin-top: 24px; background-color: #475569;">Reset Matrix</button>
+        <div class="action-btn-group">
+            <button class="btn-success" onclick="exportResultsAsText()">📥 Export Results Document</button>
+            <button class="btn-accent" onclick="emailResults()">✉️ Send Profile via Email</button>
+            <button onclick="window.location.reload()" class="btn-secondary">Reset Matrix</button>
+        </div>
     </div>
 </div>
 
@@ -424,7 +454,6 @@ const spectrumAxes = [
     }
 ];
 
-// Explicit independent mapping of trait targets to items
 const questions = [
     { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", trait: "ADHD", weight: 1.0 },
     { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", trait: "OCD", weight: 1.0 },
@@ -470,6 +499,10 @@ const matrixRoles = {
     "APND": { title: "The Drifting Outlaw", mbti: "ISTP / INTP (Off-Grid Architecture)", sector: "Decentralized Systems & Specialized Contracting", insights: "Flourishes in independent consulting contracts or specialized project evaluation loops decoupled from permanent corporate architecture. Premier fits: Freelance Smart Contract Auditing, Cryptographic Architecture Engineering.", desc: "<strong>Profile Matrix Analysis:</strong> Autonomous off-grid configuration. Operates outside standard administrative frameworks and feels completely insulated from social expectations, authoritative demands, or external anxiety markers. While possessing an independent social ego, an elevated Burnout Risk scale keeps you from empire building, prompting quiet, unhindered transit." }
 };
 
+let dimensions = {};
+let currentRoleData = {};
+let finalTypeCode = "";
+
 const container = document.getElementById('questions-container');
 questions.forEach((q, index) => {
     container.innerHTML += `
@@ -505,21 +538,16 @@ document.addEventListener('click', function() {
 });
 
 function calculateResults() {
-    // 1. Setup independent calculation buckets for all 7 traits
     const traitScores = { OCD: 0, ADHD: 0, Neurotic: 0, Psychopathic: 0, Autistic: 0, Narcissistic: 0, Depressive: 0, Reserve: 0 };
     const traitCounts = { OCD: 0, ADHD: 0, Neurotic: 0, Psychopathic: 0, Autistic: 0, Narcissistic: 0, Depressive: 0, Reserve: 0 };
 
-    // Accumulate scores natively per question
     questions.forEach(q => {
         const val = parseInt(document.getElementById(`q-${q.id}`).value);
-        // Map range [-5, 5] to linear range [0, 10]
         const positiveVal = val + 5;
         traitScores[q.trait] += positiveVal;
         traitCounts[q.trait]++;
     });
 
-    // 2. Normalize to raw % out of 100 max possible per trait scale independently
-    let dimensions = {};
     Object.keys(traitScores).forEach(trait => {
         const maxPossible = traitCounts[trait] * 10;
         dimensions[trait] = maxPossible > 0 ? Math.round((traitScores[trait] / maxPossible) * 100) : 0;
@@ -538,7 +566,6 @@ function calculateResults() {
         let leftPercentage, rightPercentage, statusText, statusClass;
 
         if (axis.id === "vitality") {
-            // Depressive-style is treated as the focal unipolar variance
             rightPercentage = dimensions["Depressive"];
             const isDepressive = rightPercentage > 50;
             generatedTypeCode += isDepressive ? axis.right.code : axis.left.code;
@@ -577,7 +604,6 @@ function calculateResults() {
             }, 100);
 
         } else {
-            // Pull explicit independent metrics calculated without zero-sum constraint rules
             if (axis.id === "regulatory") { leftPercentage = dimensions["OCD"]; rightPercentage = dimensions["ADHD"]; }
             if (axis.id === "reactivity") { leftPercentage = dimensions["Neurotic"]; rightPercentage = dimensions["Psychopathic"]; }
             if (axis.id === "socialEgo") { leftPercentage = dimensions["Autistic"]; rightPercentage = dimensions["Narcissistic"]; }
@@ -629,33 +655,81 @@ function calculateResults() {
         }
     });
 
-    const activeRole = matrixRoles[generatedTypeCode] || { 
+    finalTypeCode = generatedTypeCode;
+    currentRoleData = matrixRoles[generatedTypeCode] || { 
         title: "The Balanced Matrix", 
         desc: "Your profile maps precisely to the central baseline intersection of the vector fields.",
         mbti: "Unknown / Central Balanced",
         sector: "Generalist & Dynamic Adaptations",
-        insights: "Your answers suggest a balanced placement directly across key archetypal vectors, avoiding extreme deviations."
+        insights: "Your answers suggest a balanced placement directly across key archetypal vectors."
     };
     
-    document.getElementById('computed-role-title').innerText = activeRole.title;
+    document.getElementById('computed-role-title').innerText = currentRoleData.title;
     document.getElementById('computed-type-code').innerText = generatedTypeCode;
-    document.getElementById('computed-type-desc').innerHTML = activeRole.desc;
+    document.getElementById('computed-type-desc').innerHTML = currentRoleData.desc;
 
-    document.getElementById('mbti-code').innerText = activeRole.mbti;
-    document.getElementById('prof-sector').innerText = activeRole.sector;
-    document.getElementById('mbti-desc-text').innerHTML = `<strong>Strategic Professional Blueprint:</strong> ${activeRole.insights}`;
+    document.getElementById('mbti-code').innerText = currentRoleData.mbti;
+    document.getElementById('prof-sector').innerText = currentRoleData.sector;
+    document.getElementById('mbti-desc-text').innerHTML = `<strong>Strategic Professional Blueprint:</strong> ${currentRoleData.insights}`;
 
-    // Pass final 7 requested traits directly into Spider engine
     const spiderPayload = {
-        "Structure [OCD-style]": dimensions["OCD"],
-        "Flexibility [ADHD-style]": dimensions["ADHD"],
-        "Emotional Reactivity [Neurotic-style]": dimensions["Neurotic"],
-        "Emotional Detachment [Psychopathic-style]": dimensions["Psychopathic"],
-        "System Orientation [Autistic-style]": dimensions["Autistic"],
-        "Status Orientation [Narcissistic-style]": dimensions["Narcissistic"],
-        "Burnout Risk [Depressive-style]": dimensions["Depressive"]
+        "Structure [OCD]": dimensions["OCD"],
+        "Flexibility [ADHD]": dimensions["ADHD"],
+        "Emotional Reactivity [Neurotic]": dimensions["Neurotic"],
+        "Emotional Detachment [Psychopathic]": dimensions["Psychopathic"],
+        "System Orientation [Autistic]": dimensions["Autistic"],
+        "Status Orientation [Narcissistic]": dimensions["Narcissistic"],
+        "Burnout Risk [Depressive]": dimensions["Depressive"]
     };
     drawSpiderChart(spiderPayload);
+}
+
+function generateReportText() {
+    let cleanDesc = currentRoleData.desc ? currentRoleData.desc.replace(/<[^>]*>/g, '') : '';
+    return `==================================================
+ARCHETYPE MATRIX - PROFILE CONFIGURATION REPORT
+==================================================
+Generated Type Code: ${finalTypeCode}
+Role Assignment   : ${currentRoleData.title}
+Estimated MBTI    : ${currentRoleData.mbti}
+Primary Sector    : ${currentRoleData.sector}
+
+--------------------------------------------------
+METRIC PROFILE SCORES:
+--------------------------------------------------
+- Structure [OCD-style]              : ${dimensions["OCD"]}%
+- Flexibility [ADHD-style]            : ${dimensions["ADHD"]}%
+- Emotional Reactivity [Neurotic]    : ${dimensions["Neurotic"]}%
+- Emotional Detachment [Psychopathic]: ${dimensions["Psychopathic"]}%
+- System Orientation [Autistic]       : ${dimensions["Autistic"]}%
+- Status Orientation [Narcissistic]  : ${dimensions["Narcissistic"]}%
+- Burnout Risk [Depressive-style]     : ${dimensions["Depressive"]}%
+
+--------------------------------------------------
+ANALYSIS AND STRATEGIC INSIGHTS:
+--------------------------------------------------
+${cleanDesc}
+
+Strategic Professional Blueprint:
+${currentRoleData.insights || ''}
+==================================================`;
+}
+
+function exportResultsAsText() {
+    const reportText = generateReportText();
+    const blob = new Blob([reportText], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Archetype_Matrix_Profile_${finalTypeCode}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function emailResults() {
+    const subject = encodeURIComponent(`Archetype Matrix Profile Report - ${finalTypeCode}`);
+    const body = encodeURIComponent(generateReportText());
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
 function drawSpiderChart(data) {
