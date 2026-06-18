@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Experimental Core Spectrum Profile</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -289,17 +288,31 @@
         }
         .range-normal { color: #4ade80; }
         .range-deviated { color: #f87171; }
-        
-        .chart-container {
-            position: relative;
-            margin: 24px auto;
-            width: 100%;
-            max-width: 340px;
-            height: 340px;
+
+        /* Chart Canvas Architecture */
+        .chart-wrapper {
             background: var(--accent-bg);
-            padding: 10px;
+            padding: 16px;
             border-radius: 12px;
+            margin-top: 20px;
             border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .chart-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-align: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            background-color: transparent;
         }
     </style>
 </head>
@@ -308,7 +321,7 @@
 <div class="quiz-container">
     <h1>Archetype Matrix</h1>
     <div class="disclaimer">
-        <strong>Experimental Mobile Framework:</strong> Tapping ⓘ opens/closes localized definitions. View your holistic functional landscape and MBTI compatibility mappings below upon evaluation.
+        <strong>Experimental Mobile Framework:</strong> Optimized for handheld displays. Tap any ⓘ icon next to a state name to toggle definitions; tap anywhere else to dismiss.
     </div>
 
     <div id="quiz-form">
@@ -323,15 +336,16 @@
             <div class="type-description" id="computed-type-desc">Analyzing profile structures...</div>
         </div>
 
-        <h2 style="font-size: 1.2rem; margin-top:24px; text-align:center;">Holistic Structural Spectrum</h2>
-        <div class="chart-container">
-            <canvas id="spiderChart"></canvas>
-        </div>
-
         <h2 style="font-size: 1.2rem; margin-top:24px;">Your Configuration Metrics</h2>
         <div id="results-display"></div>
         
-        <button onclick="window.location.reload()" style="margin-top: 20px; background-color: #475569;">Reset Matrix</button>
+        <!-- Spider Chart Target Container -->
+        <div class="chart-wrapper">
+            <div class="chart-title">7-Dimensional Condition Surface Map</div>
+            <canvas id="spiderChart" width="360" height="360"></canvas>
+        </div>
+
+        <button onclick="window.location.reload()" style="margin-top: 24px; background-color: #475569;">Reset Matrix</button>
     </div>
 </div>
 
@@ -368,73 +382,333 @@ const spectrumAxes = [
 ];
 
 const matrixRoles = {
-    "OHAS": { 
-        title: "The Perfectionist Safe-Keeper", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Rigorous protective blueprint. You process reality through high internal verification matrices (OCD Dominant), meaning structure is used to stabilize an intensely active and vulnerable autonomic nervous system (Neurotic alignment). Socially, you choose systemized rule clarity or technical schemas over organic, fluid validation matches (Autistic traits). Operating without energy penalties (Standard Vitality), you run efficient structural architectures.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Closest conceptual mapping is to <strong>ISTJ / INTJ (The Duty Fulfiller / Architect)</strong>. The 'O' and 'A' vectors reinforce dominant Introverted Sensing ($S_i$) or Introverted Intuition ($N_i$), driving a massive preference for structural Extraverted Thinking ($T_e$) order processing systems." 
-    },
-    "OHAD": { 
-        title: "The Isolated Sentinel", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> High internal system checking and rapid emotional responsiveness running against systemic fuel exhaustion. You establish rules defensively to secure a highly responsive core, but processing social hierarchies feels overly draining. High Depressive parameters suppress active real-world engagement, anchoring you in structured isolation.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Strongly maps onto <strong>INFJ / ISFJ (The Protector)</strong> operating in a severe burnout or stress loop. High introverted filtering isolates your functional mechanics from external social engagement channels." 
-    },
-    "OHNS": { 
-        title: "The Dramatic Orchestrator", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> A commanding social driver. You balance an unyielding requirement for structural precision and organization with an expansive, status-seeking ego presentation (Narcissistic leaning). Your emotional processing structure amplifies shifts rapidly (Neurotic), using high operational vitality reserves to position yourself as an unmissable anchor point in group architectures.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Aligns cleanly with <strong>ESTJ / ENFJ (The Executive / Protagonist)</strong>. The combination of structural compliance ('O') and ego expansion ('N') reflects an active Extraverted Judging ($T_e$ or $F_e$) structure maximizing group environmental control parameters." 
-    },
-    "OHND": { 
-        title: "The Fragile Sovereign", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Severe system friction signature. Your ego maps project high expectations of systemic excellence, personal distinction, and total organization. However, because you are tracking an over-threshold Depressive burden, your underlying execution capacity is chronically bottlenecked. This mismatch creates intense performance anxiety and rapid fatigue loops.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Reflects an anxious <strong>INFP / INFJ</strong> experiencing an ego-defense trap, struggling with low physical drive while preserving high internal ideal parameters." 
-    },
-    "OPAS": { 
-        title: "The Systemizing Engineer", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> A cool, low-vulnerability processing engine. You blend precise procedural checking parameters with absolute tactical calmness and fearlessness under stress (Psychopathic leaning). Social networks are stripped of emotional expectations and analyzed as purely technical flowcharts (Autistic). Backed by an optimal energy profile, you process complicated problems logically without distress.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Mirrors the classic <strong>INTP / ISTP (The Thinker / Artisan)</strong> structural ideal. Demonstrates heavy, unadulterated Introverted Thinking ($T_i$) coupled with objective Extraverted Sensation ($S_e$), keeping variables detached from emotional signaling systems." 
-    },
-    "OPAD": { 
-        title: "The Detached Analyst", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Cold cognitive isolation architecture. You process systemic inputs cleanly behind an absolute wall of emotional detachment and reduced anxiety markers. Because your energetic metrics show a heavy Depressive burden, you skip active status competition entirely, processing systems safely from a distance.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Maps closely onto an <strong>INTJ (The Mastermind)</strong> operating in a low-energy state, where logical detachment ($T_x$) isolates the individual from active social engagement." 
-    },
-    "OPNS": { 
-        title: "The Strategic Director", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Maximized leverage layout. You combine highly analytical, systematic tracking rules, total emotional fearlessness under pressure, and a confident, expansionist social ego structure. Operating with unencumbered active energy parameters, you engineer boundaries and utilize networks aggressively to achieve targets.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Perfect mapping to <strong>ENTJ (The Commander)</strong>. Reflects optimized Extraverted Thinking ($T_e$) combined with a highly agentic, objective execution style that treats elements within an ecosystem as components of a master blueprint." 
-    },
-    "OPND": { 
-        title: "The Cold Architect", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Quietly calculating system director. Your configuration holds high authority expectations and complete emotional resilience to social pressure. Because you are tracking an over-threshold Depressive energy burden, you forgo loud public positioning, opting to engineer systemic parameters and direct variables from a low-profile stance.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Corresponds precisely to a highly strategic, low-energy **INTJ / ISTJ** processing environmental parameters calmly without investing valuable energy assets into superficial socialization." 
-    },
-    "AHAS": { 
-        title: "The Creative Storm", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> High-fluidity exploratory layout. Driven by shifting novelty parameters and an open, non-linear cognitive structure (ADHD orientation), connected to a deeply sensitive emotional framework. You decode social spaces using highly personalized, intuitive schemas rather than rigid status tracking. Steady energy reserves allow hyper-flexible execution paths.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Aligns seamlessly with **ENFP / INFP (The Campaigner / Mediator)**. The open cognitive vector ('A') mirrors high Extraverted Intuition ($N_e$), prioritizing organic, raw emotional integration ($F_i$) over fixed structural constraints." 
-    },
-    "AHAD": { 
-        title: "The Wandering Romantic", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Introspective explorer with restricted operational fuel. Features highly flexible, rule-evading cognitive processing and deep emotional responsiveness. Because your active energy bar tracks an elevated Depressive burden, your mental leaps rarely cross over into real-time physical execution, keeping processing inward-facing.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Closely mirrors the **INFP (The Dreamer)** experiencing low operational energy or a depressive cycle, causing rich internal values to stay safely within an imaginative space." 
-    },
-    "AHNS": { 
-        title: "The Charismatic Maverick", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> High-influence improviser. Completely rejects standardized administrative rules or rigid structural templates, moving via real-time inspiration. Your active emotional system is reactive, matching an ambitious, validation-seeking social matrix configuration. Backed by high operational energy, you navigate groups with dynamic charm.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Maps to **ENTP / ESTP (The Visionary / Dynamo)**. Represents dominant Extraverted Perceiving ($N_e$ or $S_e$) chasing novelty, using high validation metrics to capture social authority dynamically." 
-    },
-    "AHND": { 
-        title: "The Volatile Free-Agent", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Unstable performance footprint. You hop quickly between new concepts while evading long-term procedural structures, showing high emotional vulnerability to friction. Ambitions are high, but an over-threshold Depressive burden creates massive execution bottlenecks, triggering short bursts of energy followed by quick exhaustion drops.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Reflects an **ENFP / ENTP** stuck in an unintegrated cycle, struggling to find traction due to conflicting energetic limitations and high expectations." 
-    },
-    "APAS": { 
-        title: "The Independent Explorer", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Autonomous tactical rogue. Pairs a highly flexible, opportunistic focus strategy with absolute emotional resilience and crisis fearlessness. Your social design bypasses complex status tracking entirely, preferring flat, direct, and literal communication paths. Highly effective at navigating highly chaotic, real-world field settings.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Classic alignment with **ISTP (The Virtuoso)**. The 'A' and 'P' mix mirrors a highly tactical, responsive use of Introverted Thinking ($T_i$) and Extraverted Sensation ($S_e$), keeping action direct, decoupled from anxiety, and decoupled from social games." 
-    },
-    "APAD": { 
-        title: "The Ghost Observer", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Low-profile unencumbered drifter. You move through environments with zero demand for fixed rules or administrative structures, filtering information through an unbothered, detached emotional style. Because your social drive is highly insulated and functional fuel is bound by a Depressive burden, you pass through settings cleanly and quietly.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Maps closely onto an **INTP (The Logician)** experiencing high burnout metrics, drifting neutrally through external events while executing abstract logic parameters purely inside." 
-    },
-    "APNS": { 
-        title: "The Opportunistic Pioneer", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Target-oriented entrepreneurial model. Operates via a highly open, non-linear cognitive layout that spots immediate strategic gaps, combined with absolute personal fearlessness and a status-driven social architecture. High active vitality yields immediate adjustments to lock down environmental leverage.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Matches the **ESTP (The Entrepreneur)** profile ideal. Maximizes active Extraverted Sensation ($S_e$) combined with a highly calculating, low-anxiety approach to group dynamics to capture value efficiently." 
-    },
-    "APND": { 
-        title: "The Drifting Outlaw", 
-        desc: "<strong>Deep Structural Profile Analysis:</strong> Autonomous, off-grid setup. Operates entirely outside traditional administrative lines, staying completely insulated from social expectations, authority pressures, or situational anxiety markers. While you possess an independent social ego, an elevated Depressive metric prevents active empire building, choosing instead unhindered transit.<br><br><strong>MBTI Alignment Cross-Reference:</strong> Corresponds to an **ISTP / ENTP** operating completely detached from societal frameworks, utilizing a low-energy model to remain clear of institutional control." 
-    }
+    "OHAS": { title: "The Perfectionist Safe-Keeper", desc: "<strong>Profile Matrix Analysis:</strong> Rigorous protective structure. Combines high demand for systematic internal rule verification (OCD-leaning Dominant) with an incredibly responsive emotional compass (Neurotic). Socially operates via direct system data channels rather than status signaling games (Autistic). Backed by unencumbered functional energy (Standard Vitality), you protect operational baseline parameters cleanly." },
+    "OHAD": { title: "The Isolated Sentinel", desc: "<strong>Profile Matrix Analysis:</strong> High monitoring parameters clashing against systemic fuel starvation. You construct strict external rules and analytical patterns to safeguard a fragile internal landscape. Social connectivity parameters feel extremely taxing, prompting withdrawal into secure zones. Currently, high Depressive burden variables limit output, anchoring you to an introverted observation pattern." },
+    "OHNS": { title: "The Dramatic Orchestrator", desc: "<strong>Profile Matrix Analysis:</strong> High-impact social driver structure. Merges rigorous demands for administrative structure with an expressive, reactive communication loop. Your social configuration leverages systemic rules, status positions, and validation metrics (Narcissistic Dominant). Backed by high active energy, you position yourself effectively as a regulatory pillar in group operations." },
+    "OHND": { title: "The Fragile Sovereign", desc: "<strong>Profile Matrix Analysis:</strong> Severe friction signature. Your internal ego maps expect extreme systemic precision, recognition, and structural execution, paired with an acute emotional sensitivity to performance failure or criticism. Because your active energy scale features an over-threshold Depressive burden, follow-through capacity is highly limited, generating cycles of anxious paralysis." },
+    "OPAS": { title: "The Systemizing Engineer", desc: "<strong>Profile Matrix Analysis:</strong> Highly rationalized, low-vulnerability processing engine. Melds strict rule verification with absolute tactical calmness and fearlessness under high operational stress (Psychopathic Dominant). Social systems are navigated via literal, logical paths entirely decoupled from validation or emotional demands. Highly effective at debugging chaotic real-time crises cleanly." },
+    "OPAD": { title: "The Detached Analyst", desc: "<strong>Profile Matrix Analysis:</strong> Clinical cognitive isolation. Operates via an ultra-precise, systemizing approach buffered by an unbothered, absolute emotional detachment strategy. Because active energetic capacity is significantly suppressed by high Depressive burden values, you systematically avoid status battles and complex social networks, calculating data quietly from a distant safe frame." },
+    "OPNS": { title: "The Strategic Director", desc: "<strong>Profile Matrix Analysis:</strong> Maximized operational leverage template. Combines high structured calculation parameters, total crisis fearlessness, and an expansive, status-seeking ego framework. Backed by fully functional, unencumbered baseline energy, you engineer rules, leverage social networks aggressively, and steer complex systems toward targeted objectives cleanly." },
+    "OPND": { title: "The Cold Architect", desc: "<strong>Profile Matrix Analysis:</strong> Hidden structural coordinator. Possesses an ambitious ego blueprint that expects authoritative command over systems, backed by total emotional resilience to pressure. However, because you are currently running a high-burden Depressive energy state, you skip overt self-promotion. Instead, you design structures and direct variables from behind the scenes." },
+    "AHAS": { title: "The Creative Storm", desc: "<strong>Profile Matrix Analysis:</strong> Fluid exploratory framework. Driven by shifting novelty-seeking priorities and a highly flexible, open focus map (ADHD Dominant), connected to an intensely reactive emotional center. You analyze social systems using specialized, highly customized contextual maps rather than rigid hierarchy ranks. High active vitality allows fast, iterative adaptations." },
+    "AHAD": { title: "The Wandering Romantic", desc: "<strong>Profile Matrix Analysis:</strong> Introspective exploratory profile with constrained processing fuel. Features a highly flexible, rule-rejecting cognitive style and intense emotional sensitivity. Because your current energy scale tracks a high Depressive burden value, your mental paths rarely translate into physical real-time execution, driving deep, inward-facing conceptual processing." },
+    "AHNS": { title: "The Charismatic Maverick", desc: "<strong>Profile Matrix Analysis:</strong> High-influence improviser blueprint. Completely rejects standardized administrative rulebooks and schedules, relying on spontaneous bursts of insight. Your active emotional system responds quickly, pairing with an ambitious, status-seeking social matrix configuration. High baseline energy yields highly dynamic group positioning." },
+    "AHND": { title: "The Volatile Free-Agent", desc: "<strong>Profile Matrix Analysis:</strong> Erratic performance footprint. Shifts rapidly between new concepts while evading long-term structural tracking, paired with high vulnerability to friction or negative social metrics. Overt status goals exist, but an over-threshold Depressive burden profile creates severe execution bottlenecks, triggering cycles of intense excitement followed by rapid crashes." },
+    "APAS": { title: "The Independent Explorer", desc: "<strong>Profile Matrix Analysis:</strong> Self-contained tactical rogue. Pairs a highly flexible, opportunistic focus strategy with absolute emotional resilience and structural crisis fearlessness. Social engagement parameters avoid political status tracking entirely, relying on flat, direct, and literal communication tracks. Highly effective when dropped into unpredictable environments." },
+    "APAD": { title: "The Ghost Observer", desc: "<strong>Profile Matrix Analysis:</strong> Low-profile unencumbered drifter. Navigates reality with zero demand for rigid schedules or administrative restrictions, filtering inputs through an unbothered, hyper-calm emotional state. Because social architecture is highly insular and functional energy is heavily bound by a Depressive burden, you pass through environments safely invisible." },
+    "APNS": { title: "The Opportunistic Pioneer", desc: "<strong>Profile Matrix Analysis:</strong> Target-focused entrepreneurial design. Operates with a completely open, non-linear cognitive structure that spots immediate functional openings, backed by absolute fearlessness and a highly confident, status-oriented social architecture. Maximized energetic vitality yields immediate tactical adjustments to maximize advantage." },
+    "APND": { title: "The Drifting Outlaw", desc: "<strong>Profile Matrix Analysis:</strong> Autonomous off-grid configuration. Operates outside standard administrative frameworks and feels completely insulated from social expectations, authoritative demands, or external anxiety markers. While possessing an independent social ego, an elevated Depressive burden scale keeps you from empire building, prompting quiet, unhindered transit." }
 };
 
 const questions = [
     { id: 1, text: "I struggle severely with structure and find my focus constantly scattered onto new things.", axis: "regulatory", gain: 1.0 },
     { id: 2, text: "I feel a rigid, intense urge to repeat tasks or double-check safety rules to avoid immense anxiety.", axis: "regulatory", gain: -1.0 },
-    { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain:
+    { id: 3, text: "I easily lose track of appointments or get completely overwhelmed by long-term time management.", axis: "regulatory", gain: 1.0 },
+    { id: 4, text: "I demand symmetry, absolute organization, or strict cleaning rules to feel calm in my home.", axis: "regulatory", gain: -1.0 },
+    { id: 5, text: "I constantly abandon boring responsibilities midway through because the initial excitement wears off.", axis: "regulatory", gain: 1.0 },
+    
+    { id: 6, text: "I experience rapidly shifting, intense emotions and feel deeply uncomfortable when environments feel cold or distant.", axis: "reactivity", gain: -1.0 },
+    { id: 7, text: "Even in deep crises or dangerous situations, I remain perfectly cold, fearless, and unbothered while others panic.", axis: "reactivity", gain: 1.0 },
+    { id: 8, text: "I am highly vulnerable to criticism or perceived rejection, often reacting with visible emotional distress.", axis: "reactivity", gain: -1.0 },
+    { id: 9, text: "Fear, guilt, and natural empathy are things I simply do not experience internally when crossing lines.", axis: "reactivity", gain: 1.0 },
+    { id: 10, text: "I find myself using dramatic behaviors or emotional outbursts just to ensure people are paying attention to me.", axis: "reactivity", gain: -1.0 },
+    
+    { id: 11, text: "I firmly believe that my innate talents, insights, and achievements place me well above average individuals.", axis: "socialEgo", gain: 1.0 },
+    { id: 12, text: "I find superficial social pleasantries entirely exhausting and struggle deeply to decrypt unwritten social cues.", axis: "socialEgo", gain: -1.0 },
+    { id: 13, text: "I spend substantial time imagining scenarios where I receive profound praise, power, or systemic recognition.", axis: "socialEgo", gain: 1.0 },
+    { id: 14, text: "I rely strictly on immutable routines; dynamic, unexpected changes to my plans induce heavy sensory or mental stress.", axis: "socialEgo", gain: -1.0 },
+    { id: 15, text: "I feel an intense wave of personal entitlement or superiority when dealing with standard everyday environments.", axis: "socialEgo", gain: 1.0 },
+    
+    { id: 16, text: "Lately, my systemic emotional baseline feels completely flattened out, rendering hobbies entirely joyless.", axis: "vitality", gain: 1.0 },
+    { id: 17, text: "Basic components of standard daily operational maintenance (replying, showering, cooking) feel physically exhausting.", axis: "vitality", gain: 1.0 },
+    { id: 18, text: "I approach my imminent personal timeline with profound pessimism, seeing little reason to execute effort.", axis: "vitality", gain: 1.0 },
+    { id: 19, text: "I preserve an active, highly energetic curiosity and look forward to what tomorrow brings.", axis: "vitality", gain: -1.0 },
+    { id: 20, text: "I feel physically light, mentally capable, and driven to connect dynamically with goals throughout the week.", axis: "vitality", gain: -1.0 }
+];
+
+const container = document.getElementById('questions-container');
+questions.forEach((q, index) => {
+    container.innerHTML += `
+        <div class="question-block">
+            <div class="question-text">${index + 1}. ${q.text}</div>
+            <div class="slider-container">
+                <div class="current-value" id="val-${q.id}">0</div>
+                <input type="range" id="q-${q.id}" min="-5" max="5" value="0" step="1" oninput="updateValue(${q.id}, this.value)">
+                <div class="slider-labels">
+                    <span>Disagree (-5)</span>
+                    <span>Neutral (0)</span>
+                    <span>Agree (+5)</span>
+                </div>
+            </div>
+        </div>
+    `;
+});
+
+function updateValue(id, val) {
+    document.getElementById(`val-${id}`).innerText = val > 0 ? `+${val}` : val;
+}
+
+function toggleTooltip(event, id) {
+    event.stopPropagation();
+    const targetTooltip = document.getElementById(id);
+    const wasActive = targetTooltip.classList.contains('active');
+    document.querySelectorAll('.tooltip').forEach(el => el.classList.remove('active'));
+    if (!wasActive) targetTooltip.classList.add('active');
+}
+
+document.addEventListener('click', function() {
+    document.querySelectorAll('.tooltip').forEach(el => el.classList.remove('active'));
+});
+
+function calculateResults() {
+    const axisTotals = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
+    const axisMaxes = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
+
+    questions.forEach(q => {
+        const val = parseInt(document.getElementById(`q-${q.id}`).value);
+        axisTotals[q.axis] += val * q.gain;
+        axisMaxes[q.axis] += 5 * Math.abs(q.gain);
+    });
+
+    document.getElementById('quiz-form').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const display = document.getElementById('results-display');
+    display.innerHTML = '';
+
+    let generatedTypeCode = "";
+    
+    // Store exact percent metrics for our 7-axis spider chart
+    let dimensions = {
+        "OCD": 0, "ADHD": 0, "Neurotic": 0, "Psychopathic": 0, "Autistic": 0, "Narcissistic": 0, "Depressive": 0
+    };
+
+    spectrumAxes.forEach((axis, index) => {
+        const currentScore = axisTotals[axis.id];
+        const maxScore = axisMaxes[axis.id];
+        
+        const rawPercentage = ((currentScore - (-maxScore)) / (maxScore - (-maxScore))) * 100;
+        const rightPercentage = Math.round(rawPercentage);
+        const leftPercentage = 100 - rightPercentage;
+
+        if (axis.id === "vitality") {
+            const isDepressive = rightPercentage > 50;
+            generatedTypeCode += isDepressive ? axis.right.code : axis.left.code;
+            dimensions["Depressive"] = rightPercentage;
+
+            const isNormal = (rightPercentage >= axis.normalMin && rightPercentage <= axis.normalMax);
+            const statusClass = isNormal ? "range-normal" : "range-deviated";
+            const statusText = isDepressive ? `Depressive State Flagged (>50%)` : `Optimal Energy State (≤50%)`;
+
+            display.innerHTML += `
+                <div class="axis-wrapper">
+                    <div class="axis-meta">${axis.title}</div>
+                    <div class="axis-labels">
+                        <div class="label-group label-group-left">
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-l-${index}')">ⓘ</span>
+                            <span style="color:#94a3b8;">${axis.left.name}</span>
+                            <div class="tooltip" id="tt-l-${index}"><strong>${axis.left.name}:</strong> ${axis.left.def}</div>
+                        </div>
+                        <div class="label-group label-group-right">
+                            <span class="pole-right">Burden: ${rightPercentage}%</span>
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-r-${index}')">ⓘ</span>
+                            <div class="tooltip" id="tt-r-${index}"><strong>${axis.right.name}:</strong> ${axis.right.def}</div>
+                        </div>
+                    </div>
+                    <div class="spectrum-bar-bg">
+                        <div class="indicator-block unipolar-fill" id="bar-${axis.id}"></div>
+                    </div>
+                    <div class="range-verdict ${statusClass}">
+                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const bar = document.getElementById(`bar-${axis.id}`);
+                if (bar) bar.style.width = rightPercentage + "%";
+            }, 100);
+
+        } else {
+            const leftDominant = leftPercentage >= rightPercentage;
+            generatedTypeCode += leftDominant ? axis.left.code : axis.right.code;
+
+            // Map standard spectrum endpoints to the 7-D schema
+            if (axis.id === "regulatory") { dimensions["OCD"] = leftPercentage; dimensions["ADHD"] = rightPercentage; }
+            if (axis.id === "reactivity") { dimensions["Neurotic"] = leftPercentage; dimensions["Psychopathic"] = rightPercentage; }
+            if (axis.id === "socialEgo") { dimensions["Autistic"] = leftPercentage; dimensions["Narcissistic"] = rightPercentage; }
+
+            const isNormal = (leftPercentage >= axis.normalMin && leftPercentage <= axis.normalMax);
+            const statusClass = isNormal ? "range-normal" : "range-deviated";
+            const statusText = isNormal ? "Normal Spectrum Variance" : "Elevated Divergence Detected";
+
+            let side = leftDominant ? "left" : "right";
+            let displayBarWidth = Math.abs(leftPercentage - 50) * 2;
+
+            display.innerHTML += `
+                <div class="axis-wrapper">
+                    <div class="axis-meta">${axis.title}</div>
+                    <div class="axis-labels">
+                        <div class="label-group label-group-left">
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-l-${index}')">ⓘ</span>
+                            <span class="pole-left" style="${leftDominant ? 'text-decoration:underline;' : ''}">${axis.left.name}</span>
+                            <div class="tooltip" id="tt-l-${index}"><strong>${axis.left.name}:</strong> ${axis.left.def}</div>
+                        </div>
+                        <div class="label-group label-group-right">
+                            <span class="pole-right" style="${!leftDominant ? 'text-decoration:underline;' : ''}">${axis.right.name}</span>
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-r-${index}')">ⓘ</span>
+                            <div class="tooltip" id="tt-r-${index}"><strong>${axis.right.name}:</strong> ${axis.right.def}</div>
+                        </div>
+                    </div>
+                    <div class="spectrum-bar-bg">
+                        <div class="center-divider"></div>
+                        <div class="indicator-block ${side === 'left' ? 'to-left' : 'to-right'}" id="bar-${axis.id}"></div>
+                    </div>
+                    <div class="dual-metrics-container">
+                        <span>${axis.left.name}: ${leftPercentage}%</span>
+                        <span>${axis.right.name}: ${rightPercentage}%</span>
+                    </div>
+                    <div class="range-verdict ${statusClass}">
+                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const bar = document.getElementById(`bar-${axis.id}`);
+                if (bar) {
+                    if (side === "right") {
+                        bar.style.left = "50%";
+                        bar.style.width = (displayBarWidth / 2) + "%";
+                    } else if (side === "left") {
+                        bar.style.left = (50 - (displayBarWidth / 2)) + "%";
+                        bar.style.width = (displayBarWidth / 2) + "%";
+                    }
+                }
+            }, 100);
+        }
+    });
+
+    const activeRole = matrixRoles[generatedTypeCode] || { title: "The Balanced Matrix", desc: "Your profile maps precisely to the central baseline intersection of the vector fields." };
+    
+    document.getElementById('computed-role-title').innerText = activeRole.title;
+    document.getElementById('computed-type-code').innerText = generatedTypeCode;
+    document.getElementById('computed-type-desc').innerHTML = activeRole.desc;
+
+    // Trigger Spider Canvas Rendering Engine
+    drawSpiderChart(dimensions);
+}
+
+function drawSpiderChart(data) {
+    const canvas = document.getElementById('spiderChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Core structure variables
+    const width = canvas.width;
+    const height = canvas.height;
+    const centerPoint = width / 2;
+    const maxRadius = centerPoint - 45; 
+    
+    const labels = Object.keys(data);
+    const values = Object.values(data);
+    const totalSides = labels.length;
+    const angleStep = (Math.PI * 2) / totalSides;
+
+    // Reset layout for crisp drawing
+    ctx.clearRect(0, 0, width, height);
+
+    // 1. Draw Concentric Grid Rings (25%, 50%, 75%, 100%)
+    const gridLevels = 4;
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1;
+    
+    for (let r = 1; r <= gridLevels; r++) {
+        const radius = (maxRadius / gridLevels) * r;
+        ctx.beginPath();
+        for (let i = 0; i < totalSides; i++) {
+            const currentAngle = i * angleStep - Math.PI / 2;
+            const x = centerPoint + Math.cos(currentAngle) * radius;
+            const y = centerPoint + Math.sin(currentAngle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // 2. Draw Geometric Spoke Lines
+    ctx.beginPath();
+    for (let i = 0; i < totalSides; i++) {
+        const currentAngle = i * angleStep - Math.PI / 2;
+        const x = centerPoint + Math.cos(currentAngle) * maxRadius;
+        const y = centerPoint + Math.sin(currentAngle) * maxRadius;
+        ctx.moveTo(centerPoint, centerPoint);
+        ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // 3. Draw & Map User Metric Surface Polygon
+    ctx.beginPath();
+    for (let i = 0; i < totalSides; i++) {
+        const currentAngle = i * angleStep - Math.PI / 2;
+        // Normalize percentage values to radius bounds
+        const normalizedRadius = (values[i] / 100) * maxRadius;
+        const x = centerPoint + Math.cos(currentAngle) * normalizedRadius;
+        const y = centerPoint + Math.sin(currentAngle) * normalizedRadius;
+        
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    
+    // Fill surface profile
+    ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
+    ctx.fill();
+    // Stroke surface baseline contour
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // 4. Render Peripheral Node Vertices & Data Dots
+    for (let i = 0; i < totalSides; i++) {
+        const currentAngle = i * angleStep - Math.PI / 2;
+        const normalizedRadius = (values[i] / 100) * maxRadius;
+        const x = centerPoint + Math.cos(currentAngle) * normalizedRadius;
+        const y = centerPoint + Math.sin(currentAngle) * normalizedRadius;
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 5. Smart Vector Label Formatting Engine
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    for (let i = 0; i < totalSides; i++) {
+        const currentAngle = i * angleStep - Math.PI / 2;
+        // Push labels slightly outside the maximum outer ring
+        const labelX = centerPoint + Math.cos(currentAngle) * (maxRadius + 22);
+        const labelY = centerPoint + Math.sin(currentAngle) * (maxRadius + 18);
+        
+        // Dynamically adjust anchor positions based on geometric hemisphere vector
+        if (Math.cos(currentAngle) > 0.1) ctx.textAlign = 'left';
+        else if (Math.cos(currentAngle) < -0.1) ctx.textAlign = 'right';
+        else ctx.textAlign = 'center';
+
+        if (Math.sin(currentAngle) > 0.8) ctx.textBaseline = 'top';
+        else if (Math.sin(currentAngle) < -0.8) ctx.textBaseline = 'bottom';
+        else ctx.textBaseline = 'middle';
+
+        ctx.fillText(`${labels[i]} (${values[i]}%)`, labelX, labelY);
+    }
+}
+</script>
+
+</body>
+</html>
