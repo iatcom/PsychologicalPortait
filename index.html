@@ -65,7 +65,7 @@
         }
         input[type="range"] {
             width: 100%;
-            height: 44px; /* Optimized mobile hit target */
+            height: 44px;
             margin: 8px 0;
             cursor: pointer;
             background: transparent;
@@ -163,69 +163,91 @@
             border: 1px solid var(--border-color);
         }
         .axis-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             font-weight: 700;
             font-size: 0.85rem;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            text-align: center;
         }
         
+        .axis-labels {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+
+        .label-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+        }
+
+        .pole-left { color: #38bdf8; }
+        .pole-right { color: #f59e0b; }
+        
+        /* Mobile Toggle Tooltip Architecture */
         .info-icon {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             background: #475569;
             color: white;
             border-radius: 50%;
             font-size: 0.75rem;
             cursor: pointer;
-            position: relative;
         }
-        .info-icon .tooltip {
+        
+        .tooltip {
             position: absolute;
-            bottom: 130%;
-            right: 0;
-            width: 260px;
+            bottom: 140%;
+            width: 240px;
             background: var(--tooltip-bg);
             color: white;
-            padding: 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             font-size: 0.8rem;
             font-weight: normal;
             line-height: 1.4;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.15s;
-            z-index: 10;
-            border: 1px solid #334155;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 100;
+            border: 1px solid #475569;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+            text-transform: none;
+            letter-spacing: normal;
         }
-        .info-icon:active .tooltip, .info-icon:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
+        
+        /* Left alignments vs Right alignments to keep tooltips on-screen */
+        .label-group-left .tooltip { left: 0; text-align: left; }
+        .label-group-right .tooltip { right: 0; text-align: left; }
+
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            border-width: 6px;
+            border-style: solid;
+        }
+        .label-group-left .tooltip::after { left: 4px; border-color: var(--tooltip-bg) transparent transparent transparent; }
+        .label-group-right .tooltip::after { right: 4px; border-color: var(--tooltip-bg) transparent transparent transparent; }
+
+        .tooltip.active {
+            display: block;
         }
 
-        .axis-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        .pole-left { color: #38bdf8; }
-        .pole-right { color: #f59e0b; }
-        
         .dual-metrics-container {
             display: flex;
             justify-content: space-between;
             font-size: 0.8rem;
-            margin-top: 4px;
+            margin-top: 6px;
             color: var(--text-muted);
             font-weight: 600;
         }
@@ -264,7 +286,7 @@
         }
         .range-verdict {
             font-size: 0.75rem;
-            margin-top: 6px;
+            margin-top: 8px;
             font-weight: 600;
             text-align: center;
         }
@@ -277,7 +299,7 @@
 <div class="quiz-container">
     <h1>Archetype Matrix</h1>
     <div class="disclaimer">
-        <strong>Experimental Mobile Notice:</strong> Clusters dual-pole indicators. Optimized for single-screen smartphone formatting. Tap ⓘ for behavioral definitions.
+        <strong>Experimental Mobile Framework:</strong> Optimized for handheld displays. Tap any ⓘ icon next to a state name to toggle definitions; tap anywhere else to dismiss.
     </div>
 
     <div id="quiz-form">
@@ -304,7 +326,7 @@ const spectrumAxes = [
     {
         id: "regulatory",
         title: "Cognitive Regulation Axis",
-        left: { name: "OCD Style", code: "O", def: "Intense drive for structural control, checks, symmetry, and routine compliance to mitigate anxiety." },
+        left: { name: "OCD Style", code: "O", def: "Intense drive for structural control, checking, symmetry, and routine compliance to mitigate anxiety." },
         right: { name: "ADHD Style", code: "A", def: "High novelty-seeking, spontaneous impulsivity, fluid mental focus, and organic time blindness." },
         normalMin: 35, normalMax: 65
     },
@@ -398,6 +420,25 @@ function updateValue(id, val) {
     document.getElementById(`val-${id}`).innerText = val > 0 ? `+${val}` : val;
 }
 
+// Global programmatic toggle function for cleaner mobile tap execution
+function toggleTooltip(event, id) {
+    event.stopPropagation();
+    const targetTooltip = document.getElementById(id);
+    const wasActive = targetTooltip.classList.contains('active');
+    
+    // Close all open tooltips first
+    document.querySelectorAll('.tooltip').forEach(el => el.classList.remove('active'));
+    
+    if (!wasActive) {
+        targetTooltip.classList.add('active');
+    }
+}
+
+// Universal tap listener to close tooltips smoothly when interacting anywhere else
+document.addEventListener('click', function() {
+    document.querySelectorAll('.tooltip').forEach(el => el.classList.remove('active'));
+});
+
 function calculateResults() {
     const axisTotals = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
     const axisMaxes = { regulatory: 0, reactivity: 0, socialEgo: 0, vitality: 0 };
@@ -417,17 +458,15 @@ function calculateResults() {
 
     let generatedTypeCode = "";
 
-    spectrumAxes.forEach(axis => {
+    spectrumAxes.forEach((axis, index) => {
         const currentScore = axisTotals[axis.id];
         const maxScore = axisMaxes[axis.id];
         
-        // Compute precise, localized absolute weights for both opposing poles simultaneously (0 to 100%)
         const rawPercentage = ((currentScore - (-maxScore)) / (maxScore - (-maxScore))) * 100;
         const rightPercentage = Math.round(rawPercentage);
         const leftPercentage = 100 - rightPercentage;
 
         if (axis.id === "vitality") {
-            // Unipolar Scale Processing: Depressive burden threshold tracking
             const isDepressive = rightPercentage > 50;
             generatedTypeCode += isDepressive ? axis.right.code : axis.left.code;
             
@@ -437,19 +476,24 @@ function calculateResults() {
 
             display.innerHTML += `
                 <div class="axis-wrapper">
-                    <div class="axis-meta">
-                        ${axis.title}
-                        <span class="info-icon">ⓘ<span class="tooltip"><strong>${axis.right.name}:</strong> ${axis.right.def}<br><br><strong>${axis.left.name}:</strong> ${axis.left.def}</span></span>
-                    </div>
+                    <div class="axis-meta">${axis.title}</div>
                     <div class="axis-labels">
-                        <span style="color:#94a3b8;">${axis.left.name}</span>
-                        <span class="pole-right">Burden: ${rightPercentage}%</span>
+                        <div class="label-group label-group-left">
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-l-${index}')">ⓘ</span>
+                            <span style="color:#94a3b8;">${axis.left.name}</span>
+                            <div class="tooltip" id="tt-l-${index}"><strong>${axis.left.name}:</strong> ${axis.left.def}</div>
+                        </div>
+                        <div class="label-group label-group-right">
+                            <span class="pole-right">Burden: ${rightPercentage}%</span>
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-r-${index}')">ⓘ</span>
+                            <div class="tooltip" id="tt-r-${index}"><strong>${axis.right.name}:</strong> ${axis.right.def}</div>
+                        </div>
                     </div>
                     <div class="spectrum-bar-bg">
                         <div class="indicator-block unipolar-fill" id="bar-${axis.id}"></div>
                     </div>
                     <div class="range-verdict ${statusClass}">
-                        ${statusText} (Normal Baseline Range: ${axis.normalMin}% - ${axis.normalMax}%)
+                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
                     </div>
                 </div>
             `;
@@ -460,12 +504,9 @@ function calculateResults() {
             }, 100);
 
         } else {
-            // Standard Bipolar Mapping Architecture displaying simultaneous percentages
             const leftDominant = leftPercentage >= rightPercentage;
             generatedTypeCode += leftDominant ? axis.left.code : axis.right.code;
 
-            // Offset alignment evaluation
-            const balanceScore = Math.abs(50 - leftPercentage) * 2; // Scales divergence from dead-center out to 100
             const isNormal = (leftPercentage >= axis.normalMin && leftPercentage <= axis.normalMax);
             const statusClass = isNormal ? "range-normal" : "range-deviated";
             const statusText = isNormal ? "Normal Spectrum Variance" : "Elevated Divergence Detected";
@@ -475,13 +516,18 @@ function calculateResults() {
 
             display.innerHTML += `
                 <div class="axis-wrapper">
-                    <div class="axis-meta">
-                        ${axis.title}
-                        <span class="info-icon">ⓘ<span class="tooltip"><strong>${axis.left.name}:</strong> ${axis.left.def}<br><br><strong>${axis.right.name}:</strong> ${axis.right.def}</span></span>
-                    </div>
+                    <div class="axis-meta">${axis.title}</div>
                     <div class="axis-labels">
-                        <span class="pole-left" style="${leftDominant ? 'text-decoration:underline;' : ''}">${axis.left.name}</span>
-                        <span class="pole-right" style="${!leftDominant ? 'text-decoration:underline;' : ''}">${axis.right.name}</span>
+                        <div class="label-group label-group-left">
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-l-${index}')">ⓘ</span>
+                            <span class="pole-left" style="${leftDominant ? 'text-decoration:underline;' : ''}">${axis.left.name}</span>
+                            <div class="tooltip" id="tt-l-${index}"><strong>${axis.left.name}:</strong> ${axis.left.def}</div>
+                        </div>
+                        <div class="label-group label-group-right">
+                            <span class="pole-right" style="${!leftDominant ? 'text-decoration:underline;' : ''}">${axis.right.name}</span>
+                            <span class="info-icon" onclick="toggleTooltip(event, 'tt-r-${index}')">ⓘ</span>
+                            <div class="tooltip" id="tt-r-${index}"><strong>${axis.right.name}:</strong> ${axis.right.def}</div>
+                        </div>
                     </div>
                     <div class="spectrum-bar-bg">
                         <div class="center-divider"></div>
@@ -492,7 +538,7 @@ function calculateResults() {
                         <span>${axis.right.name}: ${rightPercentage}%</span>
                     </div>
                     <div class="range-verdict ${statusClass}">
-                        ${statusText} (Normal Center Range: ${axis.normalMin}% - ${axis.normalMax}%)
+                        ${statusText} (Normal Range: ${axis.normalMin}% - ${axis.normalMax}%)
                     </div>
                 </div>
             `;
